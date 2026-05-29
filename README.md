@@ -74,60 +74,164 @@
 
 ***
 
-### 🧩 システム構成図
+### 📁 フォルダ構成と各バージョンの役割
 
 ```mermaid
-graph TD;
+graph LR
+    Root["📁 plant-iot-system"]
+    
+    Root --> Alpha["🟢 alpha_app.py <br>(アルファ版: 基本/CSV保存)"]
+    Root --> Beta["🟠 beta_app.py <br>(ベータ版: しきい値機能)"]
+    
+    %% プロダクション版を1つのノードでまとめてから枝分かれさせる
+    Root --> Prod["🟣 プロダクション版 (最終版)"]
+    Prod --> Logger["📄 sensor_logger.py (BEロガー)"]
+    Prod --> App["📄 sensor_app.py (FE表示)"]
+    Prod --> DB["🗄️ sensor_data.db (SQLite)"]
+    
+    Root --> RM["📄 README.md"]
 
-subgraph Sensors
-    DHT11[温湿度センサー DHT11]
-    Soil[静電容量式土壌水分センサー v1.2]
-end
+    %% スタイル設定
+    classDef root fill:#e1f5fe,stroke:#0288d1,stroke-width:2px,color:#000
+    classDef alpha fill:#e8f5e9,stroke:#388e3c,1px,color:#000
+    classDef beta fill:#fff3e0,stroke:#f57c00,1px,color:#000
+    classDef prod fill:#ede7f6,stroke:#5e35b1,2px,color:#000
+    classDef common fill:#f5f5f5,stroke:#616161,1px,color:#000
 
-subgraph Edge_Device[Edgeデバイス]
-    ADC[ADC0834-N<br>ADコンバータ]
-    RPI[Raspberry Pi 5]
-end
+    class Root root
+    class Alpha alpha
+    class Beta beta
+    class Prod,Logger,App,DB prod
+    class RM common
+```
 
-subgraph Python_System[Python処理システム]
-    Collect[センサーデータ取得]
-    Logic[しきい値判定]
-    Save[データ保存]
-    Web[Web表示処理]
-end
+***
 
-subgraph Storage
-    DB[CSV / SQLite]
-end
+### 🧩 システム構成図
 
-subgraph Client
-    Browser[PCブラウザ]
-end
+#### 1. 🟢 アルファ版のシステム構成図（前期成果物）
 
-DHT11 --> RPI
-Soil --> ADC --> RPI
+すべての処理（データ取得・保存・画面表示）が、1つのプログラム（alpha_app.py）の中で完結し、CSVへ保存するシンプルなプロトタイプ構成です。
 
-RPI --> Collect
-Collect --> Logic
-Logic --> Save
-Save --> DB
+```mermaid
+graph TD
+    subgraph Sensors ["Sensors"]
+        DHT11["温湿度センサー DHT11"]
+        Soil["静電容量式土壌水分センサー v1.2"]
+    end
 
-DB --> Web
-Web --> Browser
+    subgraph Edge_Device ["Edgeデバイス"]
+        ADC["ADC0834-N ADコンバータ"]
+        RPI["Raspberry Pi 5"]
+    end
 
-%% 色設定
-classDef sensor fill:#dff5df,color:#000,stroke:#333,stroke-width:2px;
-classDef edge fill:#ffe8cc,color:#000,stroke:#333,stroke-width:2px;
-classDef python fill:#fff4cc,color:#000,stroke:#333,stroke-width:2px;
-classDef storage fill:#dbe9ff,color:#000,stroke:#333,stroke-width:2px;
-classDef client fill:#f2f2f2,color:#000,stroke:#333,stroke-width:2px;
+    subgraph Python_System ["単一システム: alpha_app.py"]
+        Collect["センサーデータ取得"]
+        Logic["しきい値判定"]
+        Save["データ保存処理"]
+        Web["Streamlit Web表示"]
+    end
 
-%% 適用
-class DHT11,Soil sensor;
-class ADC,RPI edge;
-class Collect,Logic,Save,Web python;
-class DB storage;
-class Browser client;
+    subgraph Storage ["Storage"]
+        DB["📁 CSVファイル (sensor_data.csv)"]
+    end
+
+    subgraph Client ["Client"]
+        Browser["PCブラウザ"]
+    end
+
+    %% 接続関係
+    DHT11 --> RPI
+    Soil --> ADC
+    ADC --> RPI
+
+    RPI --> Collect
+    Collect --> Logic
+    Logic --> Save
+    Save --> DB
+    
+    DB --> Web
+    Web --> Browser
+
+    %% 色設定
+    classDef sensor fill:#dff5df,color:#000,stroke:#333,stroke-width:2px
+    classDef edge fill:#ffe8cc,color:#000,stroke:#333,stroke-width:2px
+    classDef python fill:#fff4cc,color:#000,stroke:#333,stroke-width:2px
+    classDef storage fill:#dbe9ff,color:#000,stroke:#333,stroke-width:2px
+    classDef client fill:#f2f2f2,color:#000,stroke:#333,stroke-width:2px
+
+    class DHT11,Soil sensor
+    class ADC,RPI edge
+    class Collect,Logic,Save,Web python
+    class DB storage
+    class Browser client
+```
+
+#### 2. 🟣 プロダクション版のシステム構成図（最終版）
+
+アルファ版の「Sensors」「Edgeデバイス」の基盤はそのままに、Pythonシステムを**常時稼働のバックエンド（ロガー）**と、**いつでも起動できるフロントエンド（表示画面）**に完全分離。保存先も堅牢な**SQLite**へと進化させた構成です。
+
+
+```mermaid
+graph TD
+    subgraph Sensors ["Sensors"]
+        DHT11["温湿度センサー DHT11"]
+        Soil["静電容量式土壌水分センサー v1.2"]
+    end
+
+    subgraph Edge_Device ["Edgeデバイス"]
+        ADC["ADC0834-N ADコンバータ"]
+        RPI["Raspberry Pi 5"]
+    end
+
+    %% アルファ版のひとまとめから、バックエンドとフロントエンドに分離
+    subgraph Backend ["バックエンド: sensor_logger.py"]
+        Collect["センサーデータ取得"]
+        Logic["しきい値判定"]
+        Save["SQLite保存処理"]
+    end
+
+    subgraph Storage ["Storage"]
+        DB[("🗄️ SQLite (sensor_data.db)")]
+    end
+
+    subgraph Frontend ["フロントエンド: sensor_app.py"]
+        Load["データ読み込み / 期間抽出"]
+        Web["Streamlit Web表示"]
+    end
+
+    subgraph Client ["Client"]
+        Browser["PCブラウザ"]
+    end
+
+    %% 接続関係（物理層はアルファ版と共通）
+    DHT11 --> RPI
+    Soil --> ADC
+    ADC --> RPI
+
+    %% バックエンド側の独立したデータフロー
+    RPI --> Collect
+    Collect --> Logic
+    Logic --> Save
+    Save --> DB
+
+    %% フロントエンド側の独立したデータフロー
+    DB --> Load
+    Load --> Web
+    Web --> Browser
+
+    %% 色設定（アルファ版のトーン＆マナーを完全継承）
+    classDef sensor fill:#dff5df,color:#000,stroke:#333,stroke-width:2px
+    classDef edge fill:#ffe8cc,color:#000,stroke:#333,stroke-width:2px
+    classDef python fill:#fff4cc,color:#000,stroke:#333,stroke-width:2px
+    classDef storage fill:#dbe9ff,color:#000,stroke:#333,stroke-width:2px
+    classDef client fill:#f2f2f2,color:#000,stroke:#333,stroke-width:2px
+
+    class DHT11,Soil sensor
+    class ADC,RPI edge
+    class Collect,Logic,Save,Load,Web python
+    class DB storage
+    class Browser client
 ```
 
 ***
