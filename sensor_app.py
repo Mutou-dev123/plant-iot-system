@@ -58,3 +58,77 @@ def get_latest_data():
     df = pd.read_sql_query(query, conn)
     conn.close()
     return df.iloc[0] if not df.empty else None
+
+# 過去N日分のデータを取得（グラフ表示用）
+def load_historical_data(days):
+    conn = sqlite3.connect(DB_FILE)
+    query = """
+        SELECT timestamp, moisture, temperature, humidity
+        FROM sensor_logs
+        WHERE timestamp >= datetune('now', ?, 'localtime')
+        ORDER BY timestamp ASC
+    """
+    df = pd.read_sql_query(query, conn, params=(f"-{days} days",))
+    conn.close()
+    if not df.empty:
+        df['timestamp'] = pd.to_datetime(df['timestamp'])   # 時間軸として扱えるように変換
+    return df
+
+# メイン表示処理
+try:
+    latest = get_latest_data()
+    df_history = load_historical_data(target_days)
+except Exception as e:
+    st.error("⚠️ データベースの接続に失敗しました。バックエンド(sensor_logger.py)が起動しているか確認してください。")
+    st.stop()
+
+if latest is not None:
+
+    # 最終更新時刻の表示
+    st.caption(f"🕒 最終データ更新時刻: {latest['timestamp']}")
+
+    # 現在の値を表示するメーター（しきい値判定付き）
+    col1, col2, col3 = st.columns(3)
+    with col1:
+        st.metric(label="💧 現在の土壌水分量", value=f"{latest['moisture']:.1f}%")
+        if latest['moisture'] < preset['moisture_min']: st.error(preset["msg_moisture_low"])
+        elif latest['moisture'] > preset["moisture_max"]: st.warning(preset["msg_moisture_high"])
+        else: st.success("🌱 適切水分量です")
+
+    with col2:
+        st.metric(label="🌡️ 現在の周囲の温度", value=f"{latest['temperature']:.1f}℃")
+        if latest['temperature'] > preset["temp_max"]: st.error(preset["msg_temp_high"])
+        elif latest['temperature'] < preset["temp_min"]: st.warning(preset["msg_temp_low"])
+        else: st.success("適切な温度です")
+
+    with col3:
+        st.metric(label="💨 現在の周囲の湿度", value=f"{latest['humidity']:.1f}%")
+        if latest['humidity'] < preset['hum_min']: st.warning("🍂 乾燥しています")
+        else: st.success("適切な湿度です")
+
+    st.markdown("---")
+
+    # 過去データの長期間グラフ表示
+    if not df_history.empty:
+        st.subheader(f"📈 {period} の環境推移グラフ")
+
+        # 共通のベースチャート（Xの時間軸を固定）
+        base_chart = alt.Chart(df_history).mark_line().encode(
+            x=alt.X('timestamp:T', title='時間', axis=alt.Axis(format='%m/%d %H:%M')),
+            tooltip=['timestamp:T', 'moisture:Q', 'temperature:Q', 'humidity:Q']
+        ).properties(height=280).interactive()  # マウスで拡大・縮小・ドラッグを可能に
+
+        g_col1, g_col2, g_col3 = st.columns(3)
+        with g_col1:
+            st.caption("💧 土壌水分量の推移（%）")
+            chart_moist = base_chart.encode(y=alt.Y('moisture:Q', title=None, scale=alt.Scale(domain=[0, 100])), color=alt.value('#1f77b4'))
+            st.altair_chart(chart_moist, use_container_width=True)
+
+        with g_col2:
+            st.caption("🌡️ 周囲の温度の推移 (℃)")
+            chart_temp = base_chart.encode(y=alt.Y('temperature:Q', title=None, scale=alt.Scale(domain=[0, 40])), color=alt.value('#ff7f0e'))
+            st.altair_chart(chart_temp, use_container_width=True)
+    else:
+        st.info("選択された期間のデータがまだデータベースにありません。")
+else:
+    st.info("データベースが空っぽです。バックエンドのログにデータが保存されるまでしばらくお待ちください。")
