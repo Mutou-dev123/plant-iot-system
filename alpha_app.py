@@ -1,3 +1,5 @@
+# 植物環境観測システム（α版）
+
 import streamlit as st
 from gpiozero import OutputDevice, InputDevice
 import time
@@ -10,13 +12,16 @@ import adafruit_dht
 import board
 
 # ページ設定
-st.set_page_config(page_title="植物環境観測システム", layout="wide")
-st.title("🌿 植物環境観測システム（アルファ版）")
+st.set_page_config(page_title="植物環境観測システム（α版）", layout="wide")
+st.title("🌿 植物環境観測システム（α版）")
 
-DRY_VALUE = 0.290
+# 土壌水分量 0% の限界値（これ以上乾燥しない）
+DRY_VALUE = 0.900
+
+# 土壌水分量 100% の限界値（これ以上濡れない）
 WET_VALUE = 0.196
-CSV_FILE = "sensor_data.csv"
 
+CSV_FILE = "sensor_data.csv"
 
 @st.cache_resource
 def init_sensors():
@@ -37,7 +42,7 @@ except Exception as e:
     st.sidebar.error(f"❌ 初期化エラー: {e}")
     st.stop()
 
-# ADC0834から値を読み出す関数
+# ADC0834（ADコンバータ）から値を読み出す関数
 def read_adc0834_ch0():
     cs.on()
     clk.off()
@@ -61,6 +66,7 @@ def read_adc0834_ch0():
     cs.on()
     return raw_value / 255.0
 
+# DHT11（温湿度センサー）から値を読み出す関数
 def read_dht11():
     try:
         temp = dhtDevice.temperature
@@ -87,7 +93,6 @@ if 'last_hum' not in st.session_state:
 metric_placeholder = st.empty()
 chart_placeholder = st.empty()
 
-# 💡 Ctrl+Cによる強制終了を綺麗に受け止めるための try
 try:
     while run_system:
         # 各センサーからデータを取得
@@ -117,7 +122,7 @@ try:
             'Humidity': [hum_val]
         })
         
-        # 💡 CSV保存時は小数点第1位に綺麗に丸める
+        # CSV保存時に小数点第1位に丸める
         new_data[['Moisture', 'Temperature', 'Humidity']] = new_data[['Moisture', 'Temperature', 'Humidity']].astype(float).round(1)
         
         file_exists = os.path.isfile(CSV_FILE)
@@ -128,22 +133,25 @@ try:
         display_data['Time'] = datetime.now().strftime("%H:%M:%S")
         st.session_state.history = pd.concat([st.session_state.history, display_data], ignore_index=True).tail(20)
 
-        # 画面表示
+        # メッセージ表示
         with metric_placeholder.container():
             col1, col2, col3 = st.columns(3)
 
+            # 土壌水分量に応じた表示
             with col1:
                 st.metric(label="💧 土壌水分量", value=f"{moisture_pct:.1f}%")
                 if moisture_pct < 30.0: st.error("⚠️ 過少水分量！")
                 elif moisture_pct > 80.0: st.warning("🚨 過多水分量！")
                 else: st.success("🌱 適切水分量！")
 
+            # 温度に応じた表示
             with col2:
                 st.metric(label="🌡️ 周囲の温度", value=f"{temp_val:.1f}℃")
                 if temp_val > 30.0: st.error("🥵 暑い！")
                 elif temp_val < 15.0: st.warning("🥶 寒い！")
                 else: st.success("快適温度！")
 
+            # 湿度に応じた表示
             with col3:
                 st.metric(label="💨 周囲の湿度", value=f"{hum_val:.1f}%")
                 if hum_val < 40.0: st.warning("🍂 乾燥！")
@@ -158,6 +166,7 @@ try:
                 x=alt.X('Time:N', title=None)
             ).properties(height=250)    # グラフの高さを指定
 
+            # 土壌水分量のグラフ表示
             with g_col1:
                 st.caption("📈 土壌水分量の推移 (%)")
                 # グラフの目盛りを固定
@@ -166,6 +175,7 @@ try:
                 )
                 st.altair_chart(moisture_chart, width='stretch')
 
+            # 温度のグラフ表示
             with g_col2:
                 st.caption("📈 周囲の温度の推移（℃）")
                 temp_chart = base_chart.encode(
@@ -173,6 +183,7 @@ try:
                 )
                 st.altair_chart(temp_chart, width='stretch')
 
+            # 湿度のグラフ表示
             with g_col3:
                 st.caption("📈 周囲の湿度の推移（%）")
                 hum_chart = base_chart.encode(
