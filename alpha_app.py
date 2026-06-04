@@ -191,7 +191,8 @@ try:
                 )
                 st.altair_chart(hum_chart, width='stretch')
 
-        for _ in range(20):
+        # 3000 回 * 0.1 秒 = 300秒（5分ごとの測定）
+        for _ in range(3000):
             time.sleep(0.1)
 
 except KeyboardInterrupt:
