@@ -9,12 +9,10 @@ import board
 
 # 設定項目
 DB_FILE = "sensor_data.db"
-INTERVAL_SEC = 600 # 計測間隔（秒）
-# 24時間運用なら10分（600秒）
 
 # キャリブレーション値
-DRY_VALUE = 0.750
-WET_VALUE = 0.447
+DRY_VALUE = 0.900
+WET_VALUE = 0.196
 
 # センサー初期化
 cs = OutputDevice(8)    # ラズパイ 24番ピン
@@ -27,6 +25,8 @@ dht_device = adafruit_dht.DHT11(board.D4) # ラズパイ 7番ピン
 def init_db():
     conn = sqlite3.connect(DB_FILE)
     cursor = conn.cursor()
+
+    # ログ用テーブル
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS sensor_logs (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -36,8 +36,32 @@ def init_db():
             humidity REAL
         )
     """)
+
+    # 設定用テーブル
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS system_settings (
+            id INTEGER PRIMARY KEY,
+            interval_seconds INTEGER NOT NULL
+        )
+    """)
+    
+    # 初期値（5分 = 300秒）がなければ挿入
+    cursor.execute("INSERT OR IGNORE INTO system_settings (id, interval_seconds) VALUES (1, 300)")
+
     conn.commit()
     conn.close()
+
+# DBから現在の計測間隔を読み出す関数
+def get_current_interval():
+    try:
+        conn = sqlite3.connect(DB_FILE)
+        cursor = conn.cursor()
+        cursor.execute("SELECT interval_seconds FROM system_settings WHERE id = 1")
+        row = cursor.fetchone()
+        conn.close()
+        return row[0] if row else 300
+    except Exception:
+        return 300  # エラー時は5分に設定
 
 # ADC0834から生データを読み出す
 def read_adc0834_ch0():
@@ -118,8 +142,14 @@ def main():
         except Exception as e:
             print(f"⚠️ 予期せぬエラーが発生しました（自動復帰します）: {e}")
 
-        # 次の計測まで待機
-        time.sleep(INTERVAL_SEC)
+        # 1秒ごとにDBをチェックし、設定が変わったらすぐ追従するループ
+        elapsed = 0
+        while True:
+            current_interval = get_current_interval()
+            if elapsed >= current_interval:
+                break   # 設定された時間が経過したので次の計測へ
+            time.sleep(1)
+            elapsed += 1
 
 if __name__ == "__main__":
     try:
