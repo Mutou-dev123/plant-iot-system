@@ -11,8 +11,8 @@ import board
 DB_FILE = "sensor_data.db"
 
 # キャリブレーション値
-DRY_VALUE = 0.900
-WET_VALUE = 0.196
+DRY_VALUE = 0.278
+WET_VALUE = 0.152
 
 # センサー初期化
 cs = OutputDevice(8)    # ラズパイ 24番ピン
