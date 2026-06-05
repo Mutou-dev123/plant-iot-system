@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+< lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🌿 植物環境観測システム（Django版）</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body { background-color: #121212; color: #ffffff; padding: 30px; font-family: 'Helvetica Neue', Arial, sans-serif; }
+        .card { background-color: #1e1e1e; border: 1px solid #333; border-radius: 12px; color: white; box-shadow: 0 4px 6px rgba(0,0,0,0.3); }
+        .value-display { font-size: 3rem; font-weight: bold; margin-top: 10px; }
+        .unit { font-size: 1.5rem; color: #aaa; }
+        .table-container { background-color: #1e1e1e; border-radius: 12px; padding: 20px; border: 1px solid #333; }
+    </style>
+</head>
+<>
+
+    <div class="container">
+        <div class="d-flex justify-content-between align-items-center mb-5">
+            <div>
+                <h1 class="fw-bold text-success">🌿 植物環境観測システム <span class="badge bg-secondary fs-6">Django版</span></h1>
+                <p class="text-muted m-0">⏱️ 更新間隔: <span class="text-white fw-bold">{{ interval }}</span> 秒ごとにデータを監視中</p>
+
+                <p class="text-muted m-0">🕒 現在時刻: <span id="realtime-clock" class="text-info fw-bold">{% now "H:i:s" %}</span></p>
+            </div>
+            <div class="text-end">
+                <span class="text-muted d-block">最終観測時刻</span>
+                <span class="badge bg-dark border border-secondary fs-5 text-warning">{{ latest.timestamp }}</span>
+            </div>
+        </div>
+
+        <div class="row g-4 mb-5">
+            <div class="col-md-4">
+                <div class="card p-4">
+                    <div class="text-muted fw-bold">💧 土壌水分量</div>
+                    <div class="value-display text-info">{{ latest.moisture }}<span class="unit">%</span></div>
+                </div>
+            </div>
+            
+            <div class="col-md-4">
+                <div class="card p-4">
+                    <div class="text-muted fw-bold">🌡️ 周囲の温度</div>
+                    <div class="value-display text-danger">{{ latest.temperature }}<span class="unit">℃</span></div>
+                </div>
+            </div>
+            
+            <div class="col-md-4">
+                <div class="card p-4">
+                    <div class="text-muted fw-bold">💨 周囲の湿度</div>
+                    <div class="value-display text-success">{{ latest.humidity }}<span class="unit">%</span></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="table-container">
+            <h3 class="mb-4 fw-bold">📈 直近の観測履歴（最新20件）</h3>
+            <div class="table-responsive">
+                <table class="table table-dark table-hover m-0">
+                    <thead>
+                        <tr class="text-muted border-secondary">
+                            <th>観測日時</th>
+                            <th>土壌水分量</th>
+                            <th>周囲の温度</th>
+                            <th>周囲の湿度</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for log in history %}
+                        <tr class="align-middle border-secondary">
+                            <td class="text-warning">{{ log.timestamp }}</td>
+                            <td class="fw-bold text-info">{{ log.moisture }}%</td>
+                            <td>{{ log.temperature }}℃</td>
+                            <td>{{ log.humidity }}%</td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="4" class="text-center text-muted py-4">まだセンサーデータが蓄積されていません。</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function updateClock() {
+            const now = new Date(); // パソコンの現在時刻を取得
+            
+            // 時・分・秒をそれぞれ2桁の文字にする（例: 5秒 ➡ "05"）
+            const hours = String(now.getHours()).padStart(2, '0');
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+            const seconds = String(now.getSeconds()).padStart(2, '0');
+            
+            // HTMLの「realtime-clock」の部分を、今の時間に書き換える
+            document.getElementById('realtime-clock').textContent = `${hours}:${minutes}:${seconds}`;
+        }
+
+        // 画面が開いた瞬間に、まず1回時計を表示する
+        updateClock();
+
+        // ⏱️ 1000ミリ秒（＝1秒）ごとに、updateClock関数をずっと実行し続ける！
+        setInterval(updateClock, 1000);
+    </script>
+
+</body>
+</html>
