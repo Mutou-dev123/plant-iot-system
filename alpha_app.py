@@ -1,4 +1,4 @@
-# 植物環境観測システム（α版・完全版）
+# 植物環境観測システム（α版）
 
 import streamlit as st
 from gpiozero import OutputDevice, InputDevice
@@ -15,10 +15,14 @@ import board
 st.set_page_config(page_title="植物環境観測システム（α版）", layout="wide")
 st.title("🌿 植物環境観測システム（α版）")
 
+# 温湿度計と温湿度センサーの値差
+TEMP_OFFSET = 1.6
+HUMIDITY_OFFSET = 4.5
+
 # 土壌水分量 0% の限界値（空気中）
-DRY_VALUE = 0.278
+DRY_VALUE = 0.529
 # 土壌水分量 100% の限界値（泥水）
-WET_VALUE = 0.152
+WET_VALUE = 0.333
 
 CSV_FILE = "sensor_data.csv"
 
@@ -124,23 +128,31 @@ chart_placeholder = st.empty()
 
 try:
     while run_system:
-        # 自分が古い世代になっていたら、即座にループを抜けて自爆する
         if st.session_state.generation != my_generation:
             break
 
         # 各センサーからデータを取得
         raw_val = read_adc0834_ch0()
-        temp_val, hum_val = read_dht11()
+        temp_val, hum_val = read_dht11() # 💡 ここで None が返ってくる可能性がある
 
-        if temp_val is not None: st.session_state.last_temp = temp_val
-        else: temp_val = st.session_state.last_temp
+        # ─── 🌡️ 【修正】安全に補正計算＆None対策を行う ───
+        if temp_val is not None:
+            # データが取れた時だけ補正して、記憶を更新
+            calibrated_temp = round(temp_val - TEMP_OFFSET, 1)
+            st.session_state.last_temp = calibrated_temp
+        else:
+            # エラーの時は、前回の正常な補正値を身代わりにする
+            calibrated_temp = st.session_state.last_temp
 
-        if hum_val is not None: st.session_state.last_hum = hum_val
-        else: hum_val = st.session_state.last_hum
+        if hum_val is not None:
+            calibrated_hum = round(hum_val - HUMIDITY_OFFSET, 1)
+            st.session_state.last_hum = calibrated_hum
+        else:
+            calibrated_hum = st.session_state.last_hum
 
         print(f"土壌水分量生データ: {raw_val}")
 
-        # 土壌水分を％に変換
+        # 土壌水分を％に変換（計算式完璧です！）
         moisture_pct = (raw_val - DRY_VALUE) / (WET_VALUE - DRY_VALUE) * 100
         moisture_pct = max(0, min(100, moisture_pct))
 
@@ -149,8 +161,8 @@ try:
         new_data = pd.DataFrame({
             'Time': [now],
             'Moisture': [moisture_pct],
-            'Temperature': [temp_val],
-            'Humidity': [hum_val]
+            'Temperature': [calibrated_temp],
+            'Humidity': [calibrated_hum]
         })
         
         new_data[['Moisture', 'Temperature', 'Humidity']] = new_data[['Moisture', 'Temperature', 'Humidity']].astype(float).round(1)
@@ -162,14 +174,13 @@ try:
         display_data['Time'] = datetime.now().strftime("%H:%M:%S")
         st.session_state.history = pd.concat([st.session_state.history, display_data], ignore_index=True).tail(20)
 
-        # ─── 🕵️‍♂️ 【修正点】風船を上げるかどうかの「判定」だけを先に行う ───
+        # ─── 🕵️‍♂️ 風船を上げるかどうかの「判定」 ───
         trigger_balloons = False
         if moisture_pct >= 30.0 and st.session_state.last_status == "DRY":
             trigger_balloons = True
             st.session_state.last_status = "OK"
             st.session_state.dry_count = 0
         
-        # カウンター状態の更新
         if moisture_pct < 30.0:
             st.session_state.dry_count += 1
             if st.session_state.dry_count >= 2:
@@ -179,31 +190,28 @@ try:
                 st.session_state.last_status = "OK"
                 st.session_state.dry_count = 0
 
-        # ─── メッセージ・メーター表示 ───
+        # ─── 📺 【修正】表示もすべて「補正後の値」を使う！ ───
         metric_placeholder.empty()
         with metric_placeholder.container():
             col1, col2, col3 = st.columns(3)
 
             with col1:
                 st.metric(label="💧 土壌水分量", value=f"{moisture_pct:.1f}%")
-                
-                # 💡 枠を壊さないよう、ここには文字の警告（エラー/成功）だけを表示！
-                if moisture_pct < 30.0:
-                    st.error("⚠️ 過少水分量！")
-                elif moisture_pct > 80.0:
-                    st.warning("🚨 過多水分量！")
-                else:
-                    st.success("🌱 適切水分量！")
+                if moisture_pct < 30.0: st.error("⚠️ 過少水分量！")
+                elif moisture_pct > 80.0: st.warning("🚨 過多水分量！")
+                else: st.success("🌱 適切水分量！")
 
             with col2:
-                st.metric(label="🌡️ 周囲の温度", value=f"{temp_val:.1f}℃")
-                if temp_val > 30.0: st.error("🥵 暑い！")
-                elif temp_val < 15.0: st.warning("🥶 寒い！")
+                # 💡 calibrated_temp に変更！
+                st.metric(label="🌡️ 周囲の温度", value=f"{calibrated_temp:.1f}℃")
+                if calibrated_temp > 30.0: st.error("🥵 暑い！")
+                elif calibrated_temp < 15.0: st.warning("🥶 寒い！")
                 else: st.success("快適温度！")
 
             with col3:
-                st.metric(label="💨 周囲の湿度", value=f"{hum_val:.1f}%")
-                if hum_val < 40.0: st.warning("🍂 乾燥！")
+                # 💡 calibrated_hum に変更！
+                st.metric(label="💨 周囲の湿度", value=f"{calibrated_hum:.1f}%")
+                if calibrated_hum < 40.0: st.warning("🍂 乾燥！")
                 else: st.success("適切湿度！")
 
         # ─── グラフ表示 ───
