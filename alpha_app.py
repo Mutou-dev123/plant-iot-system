@@ -34,7 +34,7 @@ if "last_status" not in st.session_state:
 if "dry_count" not in st.session_state:
     st.session_state.dry_count = 0
 
-# チカチカとダブりを両方消し去る「世代管理センサー」
+# 世代管理センサー
 if "generation" not in st.session_state:
     st.session_state.generation = 0
 st.session_state.generation += 1
@@ -58,6 +58,9 @@ try:
 except Exception as e:
     st.sidebar.error(f"❌ 初期化エラー: {e}")
     st.stop()
+
+# デバッグ用スイッチ
+show_raw = st.sidebar.toggle("🛠️ デバッグ用に生データを表示する", value=False)
 
 # 任意取得間隔の設定
 st.sidebar.markdown("---")
@@ -122,9 +125,10 @@ if 'last_temp' not in st.session_state:
 if 'last_hum' not in st.session_state:
     st.session_state.last_hum = 50.0
 
-# 上書き専用の「入れ物（プレースホルダー）」を準備
+# 上書き用のプレースホルダー
 metric_placeholder = st.empty()
 chart_placeholder = st.empty()
+raw_placeholder = st.empty()
 
 try:
     while run_system:
@@ -133,11 +137,10 @@ try:
 
         # 各センサーからデータを取得
         raw_val = read_adc0834_ch0()
-        temp_val, hum_val = read_dht11() # 💡 ここで None が返ってくる可能性がある
+        temp_val, hum_val = read_dht11()
 
-        # ─── 🌡️ 【修正】安全に補正計算＆None対策を行う ───
+        # データが取れた時だけ補正して、記憶を更新
         if temp_val is not None:
-            # データが取れた時だけ補正して、記憶を更新
             calibrated_temp = round(temp_val - TEMP_OFFSET, 1)
             st.session_state.last_temp = calibrated_temp
         else:
@@ -174,7 +177,7 @@ try:
         display_data['Time'] = datetime.now().strftime("%H:%M:%S")
         st.session_state.history = pd.concat([st.session_state.history, display_data], ignore_index=True).tail(20)
 
-        # ─── 🕵️‍♂️ 風船を上げるかどうかの「判定」 ───
+        # 風船を上げるか判定する
         trigger_balloons = False
         if moisture_pct >= 30.0 and st.session_state.last_status == "DRY":
             trigger_balloons = True
@@ -183,6 +186,8 @@ try:
         
         if moisture_pct < 30.0:
             st.session_state.dry_count += 1
+
+            # センサー移動時などの際の誤作動を防ぐため、土壌水分量が30.0%未満に2回以上になったら乾燥状態に設定
             if st.session_state.dry_count >= 2:
                 st.session_state.last_status = "DRY"
         else:
@@ -190,54 +195,72 @@ try:
                 st.session_state.last_status = "OK"
                 st.session_state.dry_count = 0
 
-        # ─── 📺 【修正】表示もすべて「補正後の値」を使う！ ───
+        # 状態にい応じたメッセージ表示
         metric_placeholder.empty()
         with metric_placeholder.container():
             col1, col2, col3 = st.columns(3)
 
+            # 土壌水分量
             with col1:
                 st.metric(label="💧 土壌水分量", value=f"{moisture_pct:.1f}%")
-                if moisture_pct < 30.0: st.error("⚠️ 過少水分量！")
-                elif moisture_pct > 80.0: st.warning("🚨 過多水分量！")
-                else: st.success("🌱 適切水分量！")
+                if moisture_pct < 30.0: st.error("⚠️ 水が少なすぎます！")
+                elif moisture_pct > 80.0: st.warning("🚨 水が多すぎます！")
+                else: st.success("🌱 適切な水分量です！")
 
+            # 温度
             with col2:
-                # 💡 calibrated_temp に変更！
                 st.metric(label="🌡️ 周囲の温度", value=f"{calibrated_temp:.1f}℃")
-                if calibrated_temp > 30.0: st.error("🥵 暑い！")
-                elif calibrated_temp < 15.0: st.warning("🥶 寒い！")
-                else: st.success("快適温度！")
+                if calibrated_temp > 30.0: st.error("🥵 暑すぎます！")
+                elif calibrated_temp < 15.0: st.error("🥶 寒すぎます！")
+                else: st.success("快適な温度です！")
 
+            # 湿度
             with col3:
-                # 💡 calibrated_hum に変更！
                 st.metric(label="💨 周囲の湿度", value=f"{calibrated_hum:.1f}%")
-                if calibrated_hum < 40.0: st.warning("🍂 乾燥！")
-                else: st.success("適切湿度！")
+                if calibrated_hum < 40.0: st.warning("🍂 乾燥しています！")
+                else: st.success("適切な湿度です！")
 
-        # ─── グラフ表示 ───
+        # グラフ表示
         chart_placeholder.empty()
         with chart_placeholder.container():
             g_col1, g_col2, g_col3 = st.columns(3)
             base_chart = alt.Chart(st.session_state.history).mark_line().encode(x=alt.X('Time:N', title=None)).properties(height=250)
 
+            # 土壌水分量
             with g_col1:
                 st.caption("📈 土壌水分量の推移 (%)")
                 st.altair_chart(base_chart.encode(y=alt.Y('Moisture:Q', title=None, scale=alt.Scale(domain=[0, 100]))), width='stretch')
 
+            # 温度
             with g_col2:
                 st.caption("📈 周囲の温度の推移（℃）")
                 st.altair_chart(base_chart.encode(y=alt.Y('Temperature:Q', title=None, scale=alt.Scale(domain=[0, 40]))), width='stretch')
 
+            # 湿度
             with g_col3:
                 st.caption("📈 周囲の湿度の推移（%）")
                 st.altair_chart(base_chart.encode(y=alt.Y('Humidity:Q', title=None, scale=alt.Scale(domain=[0, 100]))), width='stretch')
 
-        # ─── 🎈 【修正点】すべての描画が終わった安全な「外側」で風船をぶち上げる！ ───
+        # 風船を上げる
         if trigger_balloons:
-            st.balloons()   # 画面全体に風船が綺麗に舞う！
-            st.toast("🎉 給水を検知！植物が命を吹き返しました！")
+            st.balloons()   # 風船
+            st.toast("🎉 乾燥状態から復活しました！")
 
-        # 🕒 0.1秒ごとに細かく待機しつつ、画面が操作されたらその場で即座に自爆する
+        raw_placeholder.empty()
+        if show_raw:
+            with raw_placeholder.container():
+                st.markdown("---")
+                st.caption("⚙️ 管理用リアルタイム生データ（Raw Data）")
+                r_col1, r_col2, r_col3 = st.columns(3)
+                with r_col1:
+                    st.text(f"土壌水分(ADC比): {raw_val:.4f}")
+                with r_col2:
+                    st.text(f"温度(生値): {temp_val} ℃") # None対策の前の本当の生値
+                with r_col3:
+                    st.text(f"湿度(生値): {hum_val} %")
+        else:
+            raw_placeholder.empty() # スイッチがオフなら完全消去
+
         loop_count = int(interval_seconds / 0.1)
         interrupted = False
         for _ in range(loop_count):
@@ -247,6 +270,7 @@ try:
                 break
         if interrupted:
             break
+    
 
 except KeyboardInterrupt:
     pass
