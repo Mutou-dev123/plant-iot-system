@@ -1,7 +1,9 @@
 {% load static %}
 
 <!DOCTYPE html>
-<html lang="ja"> <head>
+<html lang="ja">
+    
+<head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>🌿 植物環境観測システム（Django版）</title>
@@ -11,20 +13,20 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
     <style>
-        /* 💡 背景をダークモード (#121212) に統一して、文字の視認性を上げました */
-        body { background-color: #121212; color: #ffffff; padding: 30px; font-family: 'Helvetica Neue', Arial, sans-serif; }
+        body { background-color: #ffffff; color: #ffffff; padding: 30px; font-family: 'Helvetica Neue', Arial, sans-serif; }
         .card { background-color: #1e1e1e; border: 1px solid #333; border-radius: 12px; color: white; box-shadow: 0 4px 6px rgba(0,0,0,0.3); }
         .value-display { font-size: 3rem; font-weight: bold; margin-top: 10px; }
         .unit { font-size: 1.5rem; color: #aaa; }
         .table-container { background-color: #1e1e1e; border-radius: 12px; padding: 20px; border: 1px solid #333; }
     </style>
 </head>
+
 <body> <div class="container">
         <h1 class="fw-bold text-success mt-4">🌿 植物環境観測システム <span class="badge bg-secondary fs-6">Django版</span></h1>
         <div class="d-flex justify-content-between align-items-center mb-5">
             <div>
-                <p class="text-white-50 m-0">⏱️ 更新間隔: <span class="text-warning fw-bold">{{ interval }}</span> 秒ごとにデータを監視中</p>
-                <p class="text-white-50 m-0">🕒 現在時刻: <span id="realtime-clock" class="text-info fw-bold">{% now "H:i:s" %}</span></p>
+                <p class="text-black-50 m-0">⏱️ 更新間隔: <span class="text-warning fw-bold">{{ interval }}</span> 秒ごとにデータを監視中</p>
+                <p class="text-black-50 m-0">🕒 現在時刻: <span id="realtime-clock" class="text-info fw-bold">{% now "H:i:s" %}</span></p>
             </div>
             <div class="text-end">
                 <span class="text-white-50 d-block">最終観測時刻</span>
@@ -91,13 +93,13 @@
     </div>
 
 <script>
-        // ① Djangoから安全にデータを配列として受け取る（変更なし）
+        // Djangoから安全にデータを配列として受け取る（変更なし）
         const timeLabels = [{% for log in history reversed %}'{{ log.timestamp|slice:"11:16" }}',{% endfor %}];
         const moistureData = [{% for log in history reversed %}{{ log.moisture|default:"null" }},{% endfor %}];
         const tempData = [{% for log in history reversed %}{{ log.temperature|default:"null" }},{% endfor %}];
         const humidityData = [{% for log in history reversed %}{{ log.humidity|default:"null" }},{% endfor %}];        
 
-        // ② 2軸対応のChart.jsロジック
+        // 2軸対応のChart.js
         const ctx = document.getElementById('envChart').getContext('2d');
         const envChart = new Chart(ctx, {
             type: 'line',
@@ -170,8 +172,8 @@
                         display: true,
                         position: 'right',
                         min: 0,
-                        max: 40, // 👈 温度の変化が見やすくなるようにMAXを40℃に最適化！
-                        grid: { drawOnChartArea: false }, // 左軸のグリッド線と重なってゴチャつくのを防ぐ
+                        max: 40,
+                        grid: { drawOnChartArea: false },
                         ticks: { color: '#aaaaaa' },
                         title: {
                             display: true,
@@ -183,6 +185,12 @@
                 }
             }
         });
-    </script>    
+
+    
+</script>
+
+<!-- 現在時刻表示JS呼び出し -->
+<script src="{% static 'dashboard/js/clock.js' %}"></script>
+    
 </body>
 </html>
