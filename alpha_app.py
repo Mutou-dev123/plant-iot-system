@@ -153,8 +153,6 @@ try:
         else:
             calibrated_hum = st.session_state.last_hum
 
-        print(f"土壌水分量生データ: {raw_val}")
-
         # 土壌水分を％に変換（計算式完璧です！）
         moisture_pct = (raw_val - DRY_VALUE) / (WET_VALUE - DRY_VALUE) * 100
         moisture_pct = max(0, min(100, moisture_pct))
