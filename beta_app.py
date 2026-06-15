@@ -18,8 +18,7 @@ WET_VALUE = 0.196
 CSV_FILE = "sensor_data.csv"
 
 # =================================================================
-# 💡 【拡張性の要】作物のしきい値・メッセージのマスターデータ
-# 新しい植物を増やしたい時は、この辞書に1ブロック足すだけでUIも判定も自動追従します！
+# 作物のしきい値・メッセージのマスターデータ
 # =================================================================
 CROP_PRESETS = {
     "🌱 ラディッシュ (ハツカダイコン)": {
@@ -155,7 +154,7 @@ try:
         display_data['Time'] = datetime.now().strftime("%H:%M:%S")
         st.session_state.history = pd.concat([st.session_state.history, display_data], ignore_index=True).tail(20)
 
-        # 画面表示（💡 選ばれた作物のしきい値 preset を使って動的に判定！）
+        # 画面表示
         with metric_placeholder.container():
             col1, col2, col3 = st.columns(3)
 

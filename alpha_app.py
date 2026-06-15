@@ -20,7 +20,7 @@ TEMP_OFFSET = 1.6
 HUMIDITY_OFFSET = 4.5
 
 # 土壌水分量 0% の限界値（空気中）
-DRY_VALUE = 0.529
+DRY_VALUE = 0.2824
 # 土壌水分量 100% の限界値（泥水）
 WET_VALUE = 0.333
 
