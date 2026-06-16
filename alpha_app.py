@@ -16,13 +16,13 @@ st.set_page_config(page_title="植物環境観測システム（α版）", layou
 st.title("🌿 植物環境観測システム（α版）")
 
 # 温湿度計と温湿度センサーの値差
-TEMP_OFFSET = 1.6
-HUMIDITY_OFFSET = 4.5
+TEMP_OFFSET = 2.4
+HUMIDITY_OFFSET = 3.0
 
-# 土壌水分量 0% の限界値（空気中）
-DRY_VALUE = 0.2824
-# 土壌水分量 100% の限界値（泥水）
-WET_VALUE = 0.333
+# 土壌水分量 0% の下限値
+DRY_VALUE = 0.9608
+# 土壌水分量 100% の上限値
+WET_VALUE = 0.3216
 
 CSV_FILE = "sensor_data.csv"
 
