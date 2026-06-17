@@ -108,134 +108,56 @@ graph LR
 
 ***
 
-### 🧩 システム構成図
+### 🧩 システム設計
 
-#### 1. 🟢 アルファ版のシステム構成図（前期成果物）
+#### 1. 🟢 アルファ版
 
-すべての処理（データ取得・保存・画面表示）が、1つのプログラム（alpha_app.py）の中で完結し、CSVへ保存するシンプルなプロトタイプ構成です。
+##### 1-1. システム構成図
 
 ```mermaid
-graph TD
-    subgraph Sensors ["Sensors"]
+graph LR
+    subgraph Sensors["センサー"]
         DHT11["温湿度センサー DHT11"]
-        Soil["静電容量式土壌水分センサー v1.2"]
+        Soil["土壌水分センサー"]
     end
 
-    subgraph Edge_Device ["Edgeデバイス"]
-        ADC["ADC0834-N ADコンバータ"]
+    subgraph Edge["エッジデバイス"]
+        ADC["ADC0834-N（A/D変換器）"]
         RPI["Raspberry Pi 5"]
     end
 
-    subgraph Python_System ["単一システム: alpha_app.py"]
-        Collect["センサーデータ取得"]
-        Logic["しきい値判定"]
-        Save["データ保存処理"]
-        Web["Streamlit Web表示"]
+    subgraph App["アプリケーション"]
+        STREAM["Pythonアプリ（Streamlit）"]
     end
 
-    subgraph Storage ["Storage"]
-        DB["📁 CSVファイル (sensor_data.csv)"]
+    subgraph Storage["データ保存"]
+        CSV["📁 sensor_data.csv"]
     end
 
-    subgraph Client ["Client"]
+    subgraph Client["クライアント"]
         Browser["PCブラウザ"]
+        User["ユーザー"]
     end
 
-    %% 接続関係
     DHT11 --> RPI
     Soil --> ADC
     ADC --> RPI
 
-    RPI --> Collect
-    Collect --> Logic
-    Logic --> Save
-    Save --> DB
-    
-    DB --> Web
-    Web --> Browser
-
-    %% 色設定
-    classDef sensor fill:#dff5df,color:#000,stroke:#333,stroke-width:2px
-    classDef edge fill:#ffe8cc,color:#000,stroke:#333,stroke-width:2px
-    classDef python fill:#fff4cc,color:#000,stroke:#333,stroke-width:2px
-    classDef storage fill:#dbe9ff,color:#000,stroke:#333,stroke-width:2px
-    classDef client fill:#f2f2f2,color:#000,stroke:#333,stroke-width:2px
-
-    class DHT11,Soil sensor
-    class ADC,RPI edge
-    class Collect,Logic,Save,Web python
-    class DB storage
-    class Browser client
+    RPI --> STREAM
+    STREAM --> CSV
+    STREAM --> Browser
+    User --> Browser
 ```
 
-***
-
-#### 2. 🟣 プロダクション版のシステム構成図（最終版）
-
-アルファ版の「Sensors」「Edgeデバイス」の基盤はそのままに、Pythonシステムを**常時稼働のバックエンド（ロガー）**と、**いつでも起動できるフロントエンド（表示画面）**に完全分離。保存先も頑丈な**SQLite**へと進化させた構成です。
-
+##### 1-2. 処理フロー図
 
 ```mermaid
-graph TD
-    subgraph Sensors ["Sensors"]
-        DHT11["温湿度センサー DHT11"]
-        Soil["静電容量式土壌水分センサー v1.2"]
-    end
-
-    subgraph Edge_Device ["Edgeデバイス"]
-        ADC["ADC0834-N ADコンバータ"]
-        RPI["Raspberry Pi 5"]
-    end
-
-    %% アルファ版のひとまとめから、バックエンドとフロントエンドに分離
-    subgraph Backend ["バックエンド: sensor_logger.py"]
-        Collect["センサーデータ取得"]
-        Logic["しきい値判定"]
-        Save["SQLite保存処理"]
-    end
-
-    subgraph Storage ["Storage"]
-        DB[("🗄️ SQLite (sensor_data.db)")]
-    end
-
-    subgraph Frontend ["フロントエンド: sensor_app.py"]
-        Load["データ読み込み / 期間抽出"]
-        Web["Streamlit Web表示"]
-    end
-
-    subgraph Client ["Client"]
-        Browser["PCブラウザ"]
-    end
-
-    %% 接続関係（物理層はアルファ版と共通）
-    DHT11 --> RPI
-    Soil --> ADC
-    ADC --> RPI
-
-    %% バックエンド側の独立したデータフロー
-    RPI --> Collect
-    Collect --> Logic
-    Logic --> Save
-    Save --> DB
-
-    %% フロントエンド側の独立したデータフロー
-    DB --> Load
-    Load --> Web
-    Web --> Browser
-
-    %% 色設定（アルファ版のトーン＆マナーを完全継承）
-    classDef sensor fill:#dff5df,color:#000,stroke:#333,stroke-width:2px
-    classDef edge fill:#ffe8cc,color:#000,stroke:#333,stroke-width:2px
-    classDef python fill:#fff4cc,color:#000,stroke:#333,stroke-width:2px
-    classDef storage fill:#dbe9ff,color:#000,stroke:#333,stroke-width:2px
-    classDef client fill:#f2f2f2,color:#000,stroke:#333,stroke-width:2px
-
-    class DHT11,Soil sensor
-    class ADC,RPI edge
-    class Collect,Logic,Save,Load,Web python
-    class DB storage
-    class Browser client
+graph LR
+    センサーデータ取得 --> データ整形
+    データ整形 --> しきい値判定
+    --
 ```
+
 
 ***
 
