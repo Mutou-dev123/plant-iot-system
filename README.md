@@ -85,7 +85,7 @@ graph LR
     Root --> Beta["🟠 beta_app.py <br>(ベータ版: しきい値機能)"]
     
     %% プロダクション版を1つのノードでまとめてから枝分かれさせる
-    Root --> Prod["🟣 プロダクション版 (最終版)"]
+    Root --> Prod["🟣 最終版"]
     Prod --> Logger["📄 sensor_logger.py (BEロガー)"]
     Prod --> App["📄 sensor_app.py (FE表示)"]
     Prod --> DB["🗄️ sensor_data.db (SQLite)"]
@@ -118,7 +118,7 @@ graph LR
 graph LR
     subgraph Sensors["センサー"]
         DHT11["温湿度センサー DHT11"]
-        Soil["土壌水分センサー"]
+        Soil["土壌水分センサー Capacitive Soil Moisture Sensor v1.2"]
     end
 
     subgraph Edge["エッジデバイス"]
@@ -153,11 +153,28 @@ graph LR
 
 ```mermaid
 graph LR
-    センサーデータ取得 --> データ整形
-    データ整形 --> しきい値判定
-    --
+    A[📡 センサーデータ取得]
+    B[🔄 データ補正・変換]
+    C[📝 計測データ生成]
+    D[💾 CSV<br>（永続保存）]
+    E[🧠 グラフ用メモリ更新]
+    F[📊 グラフ表示]
+    G[🔍 状態判定]
+    H[💬 メッセージ]
+
+    A --> B
+    B --> C
+
+    C --> D
+    C --> E
+    C --> G
+
+    E --> F
+
+    G --> H
 ```
 
+※ グラフ表示にはCSVではなく、メモリ上に保持した直近20件のデータを使用する。
 
 ***
 
