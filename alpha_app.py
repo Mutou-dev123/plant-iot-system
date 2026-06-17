@@ -6,6 +6,9 @@ import time
 import pandas as pd
 from datetime import datetime
 import os
+
+# altair ... グラフ描画ライブラリ。
+# Streamlitとの親和性が高く、リアルタイム更新との相性が良い。グラフの細かな設定も可能なので採用。
 import altair as alt
 
 import adafruit_dht
@@ -35,11 +38,15 @@ if "dry_count" not in st.session_state:
     st.session_state.dry_count = 0
 
 # 世代管理センサー
+# Streamlitはボタン操作や設定変更のたびにコード全体を再実行するため、
+# 古いwhile、新しいwhileが同時に動くことがある。
 if "generation" not in st.session_state:
     st.session_state.generation = 0
 st.session_state.generation += 1
 my_generation = st.session_state.generation
 
+# rerunからのGPIOが初期化されるのを防ぐため、
+# GPIOやDHT11のインスタンスを再利用する。
 @st.cache_resource
 def init_sensors():
     return {
