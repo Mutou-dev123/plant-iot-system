@@ -204,7 +204,7 @@ try:
                 st.session_state.last_status = "OK"
                 st.session_state.dry_count = 0
 
-        # 状態にい応じたメッセージ表示
+        # 状態に応じたメッセージ表示
         metric_placeholder.empty()
         with metric_placeholder.container():
             col1, col2, col3 = st.columns(3)
@@ -226,6 +226,7 @@ try:
             # 湿度
             with col3:
                 st.metric(label="💨 周囲の湿度", value=f"{calibrated_hum:.1f}%")
+                # 湿度が 40% 未満の時に「空気乾燥」メッセージ
                 if calibrated_hum < 40.0: st.warning("🍂 乾燥しています！")
                 else: st.success("適切な湿度です！")
 
