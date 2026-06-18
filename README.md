@@ -79,31 +79,49 @@
 
 ```mermaid
 graph LR
+
+    classDef default font-weight:bold
+
     Root("📁 plant-iot-system")
-    
-    Root --> Alpha("🟢 alpha_app.py <br>(アルファ版: 基本/CSV保存)")
-    Root --> Beta("🟠 beta_app.py <br>(ベータ版: しきい値機能)")
-    
-    %% プロダクション版を1つのノードでまとめてから枝分かれさせる
-    Root --> Prod("🟣 最終版")
-    Prod --> Logger("📄 sensor_logger.py (BEロガー)")
-    Prod --> App("📄 sensor_app.py (FE表示)")
-    Prod --> DB("🗄️ sensor_data.db (SQLite)")
-    
-    Root --> RM("📄 README.md")
+
+    ESP("📡 esp32-sensor<br>ESP32開発環境")
+    Legacy("📦 legacy")
+    RPi("🍓 raspberry-pi")
+    Scratch("🧪 scratch<br>学習・検証用")
+    RM("📄 README.md")
+
+    Alpha1("🟢 Alpha v1<br>基本観測")
+    Alpha2("🟢 Alpha v2<br>植物選択対応")
+
+    Django("🌐 plant_project<br>Django版開発中")
+    Streamlit("📊 sensor_app.py<br>Streamlit版")
+    Logger("🗄️ sensor_logger.py<br>データ収集・保存")
+
+    Root --> ESP
+    Root --> Legacy
+    Root --> RPi
+    Root --> Scratch
+    Root --> RM
+
+    Legacy --> Alpha1
+    Legacy --> Alpha2
+
+    RPi --> Logger
+    RPi --> Streamlit
+    RPi --> Django
 
     %% スタイル設定
     classDef root fill:#e1f5fe,stroke:#0288d1,stroke-width:2px,color:#000
-    classDef alpha fill:#e8f5e9,stroke:#388e3c,1px,color:#000
-    classDef beta fill:#fff3e0,stroke:#f57c00,1px,color:#000
-    classDef prod fill:#ede7f6,stroke:#5e35b1,2px,color:#000
-    classDef common fill:#f5f5f5,stroke:#616161,1px,color:#000
+    classDef legacy fill:#e8f5e9,stroke:#388e3c,stroke-width:2px,color:#000
+    classDef raspberry fill:#ede7f6,stroke:#5e35b1,stroke-width:2px,color:#000
+    classDef esp fill:#fff3e0,stroke:#f57c00,stroke-width:2px,color:#000
+    classDef common fill:#f5f5f5,stroke:#616161,color:#000
 
     class Root root
-    class Alpha alpha
-    class Beta beta
-    class Prod,Logger,App,DB prod
-    class RM common
+    class Legacy,Alpha1,Alpha2 legacy
+    class RPi,Logger,Streamlit,Django raspberry
+    class ESP esp
+    class Scratch,RM common
 ```
 
 ***
