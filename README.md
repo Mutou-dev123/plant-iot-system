@@ -115,9 +115,6 @@ graph LR
 ##### 1-1. システム構成図
 
 ```mermaid
-
-%% ラベルの背景を投下に設定
-
 graph LR
     %% 矢印をすべて黒にする
     linkStyle default stroke:#000,stroke-width:2px,color:#000
