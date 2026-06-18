@@ -39,11 +39,13 @@
 
 ### 🎯 作成目的
 
-- IoTシステム（センサー・エッジ処理・Web可視化）の一連のデータフローを実装するため
+2026年のゴールデンウィークから家庭菜園を始め、ラディッシュやミニトマトを育てる中で、植物の状態を感覚だけで判断することの難しさを実感した。
 
-- 植物の生育と環境データの関係を定量的に観測するため
+特に、水やりのタイミングや環境変化の影響は数値として把握できず、「今の状態は本当に適切なのか」を客観的に判断することが難しかった。
 
-- データ可視化による意思決定支援の仕組みを構築するため
+そこで、温度・湿度・土壌水分などの環境データをリアルタイムで取得・可視化し、植物の状態を定量的に把握できる仕組みを構築したいと考え、本システムの開発を開始した。
+
+また、本開発を通じて、センサーによるデータ取得からエッジ処理、データ保存、Web可視化までを一貫して実装し、IoTシステム開発の知識と技術を習得することも目的としている
 
 ***
 
@@ -105,6 +107,9 @@
 ### 📁 フォルダ構成と各バージョンの役割
 
 ```mermaid
+
+%%{init: {'flowchart': {'curve': 'stepAfter'}}}%%
+
 graph LR
 
     classDef default font-weight:bold
@@ -120,7 +125,7 @@ graph LR
     Alpha1("🟢 Alpha v1<br>基本観測")
     Alpha2("🟢 Alpha v2<br>植物選択対応")
 
-    Django("🌐 plant_project<br>Django版開発中")
+    Django("🌐 plant_project<br>Django版（開発中）")
     Streamlit("📊 sensor_app.py<br>Streamlit版")
     Logger("🗄️ sensor_logger.py<br>データ収集・保存")
 
@@ -160,6 +165,9 @@ graph LR
 ##### 1-1. システム構成図
 
 ```mermaid
+
+%%{init: {'flowchart': {'curve': 'linear'}}}%%
+
 graph LR
     %% 矢印をすべて黒にする
     linkStyle default stroke:#000,stroke-width:2px,color:#000
