@@ -79,18 +79,18 @@
 
 ```mermaid
 graph LR
-    Root["📁 plant-iot-system"]
+    Root("📁 plant-iot-system")
     
-    Root --> Alpha["🟢 alpha_app.py <br>(アルファ版: 基本/CSV保存)"]
-    Root --> Beta["🟠 beta_app.py <br>(ベータ版: しきい値機能)"]
+    Root --> Alpha("🟢 alpha_app.py <br>(アルファ版: 基本/CSV保存)")
+    Root --> Beta("🟠 beta_app.py <br>(ベータ版: しきい値機能)")
     
     %% プロダクション版を1つのノードでまとめてから枝分かれさせる
-    Root --> Prod["🟣 最終版"]
-    Prod --> Logger["📄 sensor_logger.py (BEロガー)"]
-    Prod --> App["📄 sensor_app.py (FE表示)"]
-    Prod --> DB["🗄️ sensor_data.db (SQLite)"]
+    Root --> Prod("🟣 最終版")
+    Prod --> Logger("📄 sensor_logger.py (BEロガー)")
+    Prod --> App("📄 sensor_app.py (FE表示)")
+    Prod --> DB("🗄️ sensor_data.db (SQLite)")
     
-    Root --> RM["📄 README.md"]
+    Root --> RM("📄 README.md")
 
     %% スタイル設定
     classDef root fill:#e1f5fe,stroke:#0288d1,stroke-width:2px,color:#000
@@ -115,52 +115,76 @@ graph LR
 ##### 1-1. システム構成図
 
 ```mermaid
+
+%% ラベルの背景を投下に設定
+
 graph LR
-    subgraph Sensors["センサー"]
-        DHT11["温湿度センサー DHT11"]
-        Soil["土壌水分センサー Capacitive Soil Moisture Sensor v1.2"]
+    %% 矢印をすべて黒にする
+    linkStyle default stroke:#000,stroke-width:2px,color:#000
+
+    %% オブジェクトの背景を白、文字を黒で太字に設定
+    classDef default fill:#ffffff,stroke:#9e9e9e,stroke-width:2px,color:#000,font-weight:bold
+
+    %% タイトルをHTMLタグで黒に
+    subgraph EntireSystem["<span style='font-size:22px; font-weight:bold; color:#000;'>🌿 α版 全体構成</span>"]
+
+        subgraph Sensors["<span style='font-size:18px; font-weight:bold; color:#000;'>センサー</span>"]
+            DHT11("🌡️ 温湿度センサー<br>DHT11")
+            Soil("💧 土壌水分センサー<br>Capacitive Soil Moisture Sensor v1.2")
+        end
+
+        subgraph Edge["<span style='font-size:18px; font-weight:bold; color:#000;'>エッジデバイス</span>"]
+            ADC("🔄 アナログ/デジタル変換器<br>ADC0834-N")
+            RPI("🍓 Raspberry Pi 5")
+        end
+
+        subgraph App["<span style='font-size:18px; font-weight:bold; color:#000;'>アプリケーション</span>"]
+            STREAM("💻 Pythonアプリ（Streamlit）")
+        end
+
+        subgraph Storage["<span style='font-size:18px; font-weight:bold; color:#000;'>データ保存</span>"]
+            CSV("📁 sensor_data.csv")
+        end
+
+        subgraph Client["<span style='font-size:18px; font-weight:bold; color:#000;'>クライアント</span>"]
+            Browser("🌐 PCブラウザ")
+            User("👤 ユーザー")
+        end
+
+        %% 矢印の繋がり
+        DHT11 -->|"<span style='background-color:#ffffff; color:#000; border-radius:10px; padding:2px 8px;'><b>GPIO（デジタル）</b></span>"| RPI
+        Soil -->|"<span style='background-color:#ffffff; color:#000; border-radius:10px; padding:2px 8px;'><b>アナログ電圧</b></span>"| ADC
+        ADC -->|"<span style='background-color:#ffffff; color:#000; border-radius:10px; padding:2px 8px;'><b>SPI / I2C</b></span>"| RPI
+
+        RPI -->|"<span style='background-color:#ffffff; color:#000; border-radius:10px; padding:2px 8px;'><b>内部実行</b></span>"| App
+        STREAM -->|"<span style='background-color:#ffffff; color:#000; border-radius:10px; padding:2px 8px;'><b>File I/O（追記）</b></span>"| Storage
+        STREAM -->|"<span style='background-color:#ffffff; color:#000; border-radius:10px; padding:2px 8px;'><b>HTTP / WebSocket</b></span>"| Browser
+        User -->|"<span style='background-color:#ffffff; color:#000; border-radius:10px; padding:2px 8px;'><b>閲覧・操作</b></span>"| Browser
     end
 
-    subgraph Edge["エッジデバイス"]
-        ADC["ADC0834-N（A/D変換器）"]
-        RPI["Raspberry Pi 5"]
-    end
+    %% ▼ 各パーツのデザイン設定
+    style Sensors fill:#e8f5e9,stroke:#388e3c,stroke-width:2px,color:#000,rx:15,ry:15
+    style Edge fill:#ffebee,stroke:#c62828,stroke-width:2px,color:#000,rx:15,ry:15
+    style App fill:#e1f5fe,stroke:#0288d1,stroke-width:2px,color:#000,rx:15,ry:15
+    style Storage fill:#ede7f6,stroke:#5e35b1,stroke-width:2px,color:#000,rx:15,ry:15
+    style Client fill:#fff3e0,stroke:#f57c00,stroke-width:2px,color:#000,rx:15,ry:15
 
-    subgraph App["アプリケーション"]
-        STREAM["Pythonアプリ（Streamlit）"]
-    end
-
-    subgraph Storage["データ保存"]
-        CSV["📁 sensor_data.csv"]
-    end
-
-    subgraph Client["クライアント"]
-        Browser["PCブラウザ"]
-        User["ユーザー"]
-    end
-
-    DHT11 --> RPI
-    Soil --> ADC
-    ADC --> RPI
-
-    RPI --> STREAM
-    STREAM --> CSV
-    STREAM --> Browser
-    User --> Browser
+    %% ▼ 全体枠のデザイン設定
+    style EntireSystem fill:#f5f5f5,stroke:#cfd8dc,stroke-width:3px,color:#000,rx:20,ry:20,stroke-dasharray: 5 5```
 ```
 
 ##### 1-2. 処理フロー図
 
 ```mermaid
 graph LR
-    A[📡 センサーデータ取得]
-    B[🔄 データ補正・変換]
-    C[📝 計測データ生成]
-    D[💾 CSV<br>（永続保存）]
-    E[🧠 グラフ用メモリ更新]
-    F[📊 グラフ表示]
-    G[🔍 状態判定]
-    H[💬 メッセージ]
+    A(📡 センサーデータ取得)
+    B(🔄 データ補正・変換)
+    C(📝 計測データ生成)
+    D(💾 CSV<br>（永続保存）)
+    E(🧠 グラフ用メモリ更新)
+    F(📊 グラフ表示)
+    G(🔍 状態判定)
+    H(💬 メッセージ)
 
     A --> B
     B --> C
