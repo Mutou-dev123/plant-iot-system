@@ -18,6 +18,10 @@ import board
 st.set_page_config(page_title="植物環境観測システム（α版）", layout="wide")
 st.title("🌿 植物環境観測システム（α版）")
 
+# DHT11の仕様上の測定誤差（参考値）
+# 温度：±2℃程度
+# 湿度：±5%RH程度
+
 # 温湿度計と温湿度センサーの値差
 TEMP_OFFSET = 2.4
 HUMIDITY_OFFSET = 3.0
