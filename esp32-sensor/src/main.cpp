@@ -8,9 +8,9 @@ void setup() {
 void loop() {
   digitalWrite(4, HIGH);
   Serial.println("VS CodeからLチカ！");
-  delay(2000);
+  delay(1000);
 
   digitalWrite(4, LOW);
   Serial.println("VS CodeからLチカOFF！");
-  delay(2000);
+  delay(1000);
 }
