@@ -1,16 +1,36 @@
-#include <Arduino.h>
+// メイン処理（システム全体の制御）
 
-void setup() {
-  Serial.begin(115200);
-  pinMode(4, OUTPUT);
+#include <Arduino.h>
+#include "sensors/dht_sensor.h"
+
+void setup()
+{
+	//==============================
+    // シリアル通信の初期化
+    //==============================
+
+	Serial.begin(115200);
+
+	// DHT11を初期化
+	initDHT();
+
+	Serial.println("DHT11 Start");
 }
 
-void loop() {
-  digitalWrite(4, HIGH);
-  Serial.println("VS CodeからLチカ！");
-  delay(1000);
+void loop()
+{
+	float temperature = getTemperature();
+	float humidity = getHumidity();
 
-  digitalWrite(4, LOW);
-  Serial.println("VS CodeからLチカOFF！");
-  delay(1000);
+	if (isnan(temperature) || isnan(humidity))
+	{
+		Serial.println("Failed to read from DHT11");
+	}
+	else
+	{
+		Serial.printf("Temperature	: %.1f ℃\n", temperature);
+		Serial.printf("Humidity	: %.1f %%\n", humidity);
+	}
+
+	delay(2000);
 }
