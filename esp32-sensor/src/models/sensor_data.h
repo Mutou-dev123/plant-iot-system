@@ -23,7 +23,7 @@ struct SensorData
 
     float temperature;  // 温度(℃)
     float humidity;     // 湿度(%)
-    int soilRaw;   // 土壌水分生データ(%)
+    int soilRaw;        // 土壌水分センサー生データ(%)
     float illuminance;  // 光量(lx -> lux(ルクス))
 
     //========================
