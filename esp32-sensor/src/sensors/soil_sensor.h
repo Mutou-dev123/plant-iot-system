@@ -6,10 +6,12 @@
 #ifndef SOIL_SENSOR_H
 #define SOIL_SENSOR_H
 
+#include "../models/sensor_data.h"
+
 // 土壌水分センサー初期化
 void initSoilSensor();
 
 // 土壌水分値取得
-int getSoilMoisture();
+void readSoil(SensorData &data);
 
 #endif

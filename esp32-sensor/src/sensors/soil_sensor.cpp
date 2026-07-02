@@ -7,7 +7,10 @@
 
 #include <Arduino.h>
 
-// ===== V1.2設定 =====
+//======================================
+// V1.2設定
+//======================================
+
 #define SOIL_PIN 34
 
 //======================================
@@ -21,7 +24,8 @@ void initSoilSensor()
 //======================================
 // 土壌水分量を取得
 //======================================
-int getSoilMoisture()
+void readSoil(SensorData &data)
 {
-    return analogRead(SOIL_PIN);
+    // ADC値を取得
+    data.soilRaw = analogRead(SOIL_PIN);
 }

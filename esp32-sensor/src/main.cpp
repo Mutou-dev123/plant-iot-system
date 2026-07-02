@@ -36,7 +36,7 @@ void loop()
     // センサーデータ取得
     //==============================
 	readDHT(data);
-	data.soilRaw = 0;
+	readSoil(data);
 	data.illuminance = 0;
 
 	//==============================
@@ -53,6 +53,7 @@ void loop()
 
 		Serial.printf("Temperature	: %.1f ℃\n", data.temperature);
 		Serial.printf("Humidity	: %.1f %%\n", data.humidity);
+		Serial.printf("Soil Raw	: %d\n", data.soilRaw);
 		
 		Serial.println("------------------------");
 	}
