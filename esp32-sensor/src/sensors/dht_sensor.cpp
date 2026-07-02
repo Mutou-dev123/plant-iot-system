@@ -8,34 +8,25 @@
 #include <Arduino.h>
 #include <DHT.h>
 
-// ===== DHT11設定 =====
+//==============================
+// DHT11設定
+//==============================
+
 #define DHTPIN 4
 #define DHTTYPE DHT11
 
 // DHT11を扱うためのオブジェクトを作成
 DHT dht(DHTPIN, DHTTYPE);
 
-//======================================
+//==============================
 // DHT11初期化
-//======================================
-void initDHT()
+//==============================
+void readDHT(SensorData &data)
 {
-    // DHT11を使える状態に初期化する
-    dht.begin();
-}
+    // 温度・湿度を取得
+    data.temperature = dht.readTemperature();
+    data.humidity = dht.readHumidity();
 
-//======================================
-// 温度を取得
-//======================================
-float getTemperature()
-{
-    return dht.readTemperature();
-}
-
-//======================================
-// 湿度を取得
-//======================================
-float getHumidity()
-{
-    return dht.readHumidity();
+    // データ取得成功判定
+    data.isValid = !(isnan(data.temperature) || isnan(data.humidity));
 }
