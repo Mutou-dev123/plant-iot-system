@@ -5,6 +5,7 @@
 #include "models/sensor_data.h"
 #include "sensors/dht_sensor.h"
 #include "sensors/soil_sensor.h"
+#include "sensors/light_sensor.h"
 
 void setup()
 {
@@ -16,6 +17,7 @@ void setup()
 	// センサー初期化
 	initDHT();
 	initSoilSensor();
+	initLightSensor();
 
 	Serial.println("Plant Sensor Start");
 }
@@ -37,7 +39,7 @@ void loop()
     //==============================
 	readDHT(data);
 	readSoil(data);
-	data.illuminance = 0;
+	readLight(data);
 
 	//==============================
     // データ表示
@@ -54,6 +56,7 @@ void loop()
 		Serial.printf("Temperature	: %.1f ℃\n", data.temperature);
 		Serial.printf("Humidity	: %.1f %%\n", data.humidity);
 		Serial.printf("Soil Raw	: %d\n", data.soilRaw);
+		Serial.printf("Light Raw	: %d\n", data.lightRaw);
 		
 		Serial.println("------------------------");
 	}

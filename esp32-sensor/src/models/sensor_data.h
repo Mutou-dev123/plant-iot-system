@@ -23,8 +23,8 @@ struct SensorData
 
     float temperature;  // 温度(℃)
     float humidity;     // 湿度(%)
-    int soilRaw;        // 土壌水分センサー生データ(%)
-    float illuminance;  // 光量(lx -> lux(ルクス))
+    int soilRaw;        // 土壌水分センサー生データ(ADC値)
+    int lightRaw;  // 光量センサー生データ(ADC値)
 
     //========================
     // 状態
