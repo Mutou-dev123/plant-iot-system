@@ -3,9 +3,12 @@
 #include <Arduino.h>
 
 #include "models/sensor_data.h"
+
 #include "sensors/dht_sensor.h"
 #include "sensors/soil_sensor.h"
 #include "sensors/light_sensor.h"
+
+#include "utils/logger.h"
 
 // LEDピンの設定
 const int LED_DHT = 13;		// 温湿度（緑色）
@@ -32,7 +35,7 @@ void setup()
 	Serial.begin(115200);
 
 	//==============================
-    // LED初期化と「起動・初期化中」の高速点滅演出
+    // LED初期化と「起動・初期化中」の高速点滅
     //==============================
 	pinMode(LED_DHT, OUTPUT);
 	pinMode(LED_SOIL, OUTPUT);
@@ -63,7 +66,7 @@ void loop()
     unsigned long currentMillis = millis(); // 現在のストップウォッチの時間を取得
 
     //==============================
-    // 1. センサーデータ取得（2秒に1回だけ実行）
+    // センサーデータ取得
     //==============================
     if (currentMillis - lastReadTime >= INTERVAL)
     {
@@ -77,69 +80,15 @@ void loop()
         readSoil(data);
         readLight(data);
 
-        // 状態判定（ここで各センサーが正常かエラーかをチェック）
+        // センサーエラー判定
         isDhtError = !data.isValid; 
 		isSoilError  = (data.soilRaw <= 0 || data.soilRaw >= 4095);  
         isLightError = (data.lightRaw <= 0 || data.lightRaw >= 4095);
 
-        //==============================
-        // エラー警告
-        //==============================
-        if (isDhtError || isSoilError || isLightError)
-        {
-            Serial.println("\n[⚠️ SYSTEM ALERT] 異常を検知しました");
-            
-            if (isDhtError) {
-                Serial.println("❌ 【温湿度センサー】データの取得に失敗しました。");
-                Serial.println("   ➡ 原因の可能性: センサーの故障、またはピン（D13）の接触不良・ワイヤー抜け");
+        // ログ表示（センサーエラー＆センサーデータ）
+        printSensorLog(data, isDhtError, isSoilError, isLightError);
+    } 
 
-            }
-            if (isSoilError) {
-                Serial.println("❌ 【土壌水分センサー】異常値（0または4095）を検知しました。");
-                Serial.println("   ➡ 原因の可能性: ワイヤーの脱落（0V）、または水濡れによるショート（3.3V）");
-
-            }
-            if (isLightError) {
-                Serial.println("❌ 【光量センサー】異常値（0または4095）を検知しました。");
-                Serial.println("   ➡ 原因の可能性: ワイヤーの脱落（0V）、またはショート（3.3V）");
-            }
-
-            Serial.println("------------------------------------------------");
-        }
-
-        //==============================
-        // データ表示
-        //==============================
-
-        Serial.printf("Plant ID     : %d\n", data.plantId);
-        Serial.printf("Timestamp    : %lu ms\n", data.timestamp);
-        
-        // 温湿度
-        if (isDhtError) {
-            Serial.println("Temperature  : [ERROR]");
-            Serial.println("Humidity     : [ERROR]");
-        } else {
-            Serial.printf("Temperature  : %.1f ℃\n", data.temperature);
-            Serial.printf("Humidity     : %.1f %%\n", data.humidity);
-        }
-
-        // 土壌水分（エラー時でもデータを表示する）
-        if (isSoilError) {
-            Serial.printf("Soil Raw     : %d [ERROR]\n", data.soilRaw);
-        } else {
-            Serial.printf("Soil Raw     : %d \n", data.soilRaw);
-        }
-
-        // 光量（エラー時でもデータを表示する）
-        if (isLightError) {
-            Serial.printf("Light Raw    : %d [ERROR]\n", data.lightRaw);
-        } else {
-            Serial.printf("Light Raw    : %d\n", data.lightRaw);
-        }
-
-        Serial.println("========================");
-        
-    }
 
     //==============================
     // LEDの独立制御（常に超高速で実行され続ける）
