@@ -8,17 +8,12 @@
 #include "sensors/soil_sensor.h"
 #include "sensors/light_sensor.h"
 
-#include "utils/logger.h"
-
-// LEDピンの設定
-const int LED_DHT = 13;		// 温湿度（緑色）
-const int LED_SOIL = 14;	// 土壌水分（青色）
-const int LED_LIGHT = 16;	// 光量（黄色）
+#include "utils/logger.h"           // ログ表示の読込
+#include "utils/led_indicator.h"    // LEDインジケーターの読込
 
 // タイマー管理用の変数
 unsigned long lastReadTime = 0;			// 最後にセンサーを読み取った時間
 const unsigned long INTERVAL = 2000;	// センサー取得間隔
-const unsigned long FLASH_TIME = 100;	// 点滅間隔
 
 // 各センサーのエラー状態記憶フラグ
 bool isDhtError = false;
@@ -27,33 +22,14 @@ bool isLightError = false;
 
 void setup()
 {
-
 	//==============================
     // シリアル通信の初期化
     //==============================
 
 	Serial.begin(115200);
 
-	//==============================
-    // LED初期化と「起動・初期化中」の高速点滅
-    //==============================
-	pinMode(LED_DHT, OUTPUT);
-	pinMode(LED_SOIL, OUTPUT);
-	pinMode(LED_LIGHT, OUTPUT);
-
-	// 起動完了サインとして3回素早く同時点滅させる
-	for (int i = 0; i < 3; i++) {
-		digitalWrite(LED_DHT, HIGH);
-		digitalWrite(LED_SOIL, HIGH);
-		digitalWrite(LED_LIGHT, HIGH);
-		delay(100);
-		digitalWrite(LED_DHT, LOW);
-		digitalWrite(LED_SOIL, LOW);
-		digitalWrite(LED_LIGHT, LOW);
-		delay(100);
-	}
-
-	// センサー初期化
+	// 各モジュールの初期化
+    initLEDs();
 	initDHT();
 	initSoilSensor();
 	initLightSensor();
@@ -91,30 +67,8 @@ void loop()
 
 
     //==============================
-    // LEDの独立制御（常に超高速で実行され続ける）
+    // LEDの独立制御（常に実行）
     //==============================
     
-    // データ取得にのみ一瞬点灯
-    bool isHeartbeat = (currentMillis - lastReadTime < FLASH_TIME);
-
-    // --- 温湿度（緑）の制御 ---
-    if (isDhtError) {
-        digitalWrite(LED_DHT, HIGH); // エラー時は常時点灯（SOS）
-    } else {
-        digitalWrite(LED_DHT, isHeartbeat ? HIGH : LOW); // 正常時は一瞬だけ光る
-    }
-
-    // --- 土壌水分（青）の制御 ---
-    if (isSoilError) {
-        digitalWrite(LED_SOIL, HIGH);
-    } else {
-        digitalWrite(LED_SOIL, isHeartbeat ? HIGH : LOW);
-    }
-
-    // --- 光量（黄色）の制御 ---
-    if (isLightError) {
-        digitalWrite(LED_LIGHT, HIGH);
-    } else {
-        digitalWrite(LED_LIGHT, isHeartbeat ? HIGH : LOW);
-    }
+    updateLEDs(currentMillis, lastReadTime, isDhtError, isSoilError, isLightError);
 }
