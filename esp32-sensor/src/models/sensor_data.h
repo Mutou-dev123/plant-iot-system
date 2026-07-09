@@ -30,7 +30,7 @@ struct SensorData
     // 状態
     //========================
 
-    bool isValid;         // データ取得成功かどうか
+    bool isValid;         // DHTがデータ取得成功かどうか
 };
 
 #endif
