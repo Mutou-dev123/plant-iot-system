@@ -103,16 +103,19 @@ AUTH_PASSWORD_VALIDATORS = [
 # Internationalization
 # https://docs.djangoproject.com/en/6.0/topics/i18n/
 
-LANGUAGE_CODE = 'en-us'
+# 英語から日本語に変更
+LANGUAGE_CODE = 'ja'
 
-TIME_ZONE = 'UTC'
+# UTC(世界標準時)から日本時間に変更
+TIME_ZONE = 'Asia/Tokyo'
 
 USE_I18N = True
-
 USE_TZ = True
-
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/6.0/howto/static-files/
 
 STATIC_URL = 'static/'
+
+# すべてのモデルのIDをBigAutoFieldにする
+DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
