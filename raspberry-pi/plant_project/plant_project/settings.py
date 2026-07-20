@@ -25,7 +25,8 @@ SECRET_KEY = 'django-insecure-zu=dm6)a)t+6p7d+brmhagofnnomrq7r$=-@t$ngv9(yymb#13
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+# 許可するホスト
+ALLOWED_HOSTS = ["*"]
 
 
 # Application definition
@@ -55,7 +56,9 @@ ROOT_URLCONF = 'plant_project.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [
+            BASE_DIR / 'templates'
+        ],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
