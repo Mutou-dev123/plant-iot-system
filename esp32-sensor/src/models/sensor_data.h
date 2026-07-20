@@ -14,7 +14,6 @@ struct SensorData
     // 基本情報
     //========================
 
-    uint16_t plantId;   // 植物ID
     uint32_t timestamp; // 計測時刻(ms)
 
     //========================
