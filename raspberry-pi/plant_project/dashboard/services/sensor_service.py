@@ -29,39 +29,10 @@ class SensorService:
         # JSON読み込み
         data = json.loads(request_body)
 
-        # 現在時刻取得
-        timestamp = data.get("timestamp")
-
-        # JSONバリデーション
-        ValidatorService.validate(data)
-
-        # Device取得
-        device = DeviceService.get_or_create(
-            data["deviceName"]
-        )
-
-        # データ変換
-        moisture = ConversionService.calculate_moisture(
-            data["soilRaw"]
-        )
-
-        light = ConversionService.calculate_light_score(
-            data["lightRaw"]
-        )
-
-        # DB保存
-        SensorLog.objects.create(
-            device=device,
-            timestamp=timestamp or timezone.now(),
-            soil_raw=data["soilRaw"],
-            light_raw=data["lightRaw"],
-            moisture=moisture,
-            light=light,
-            temperature=data["temperature"],
-            humidity=data["humidity"]
-        )
+        print("===== Receive =====")
+        print(data)
 
         return {
             "status": "success",
-            "next_interval": device.interval_seconds
+            "next_interval": 300
         }
