@@ -15,6 +15,6 @@
  * @return true 送信成功
  * @return false 送信失敗
  */
-bool sendSensorData(const SensorData& data);
+int sendSensorData(const SensorData& data);
 
 #endif
