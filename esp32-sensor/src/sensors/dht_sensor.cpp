@@ -8,15 +8,16 @@
 #include <Arduino.h>
 #include <DHT.h>
 
+#include "../config/pin_config.h"
+
 //==============================
 // DHT11設定
 //==============================
 
-#define DHTPIN 4
-#define DHTTYPE DHT11
+constexpr uint8_t DHT_TYPE = DHT11;
 
 // DHT11を扱うためのオブジェクトを作成
-DHT dht(DHTPIN, DHTTYPE);
+DHT dht(DHT_PIN, DHT_TYPE);
 
 //==============================
 // DHT11初期化
