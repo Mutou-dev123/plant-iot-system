@@ -8,11 +8,6 @@
 
 #include <Arduino.h>
 
-// LEDピンの設定
-const int LED_DHT = 13;		// 温湿度（緑色）
-const int LED_SOIL = 14;	// 土壌水分（青色）
-const int LED_LIGHT = 16;	// 光量（黄色）
-
 // LEDの初期化
 void initLEDs();
 

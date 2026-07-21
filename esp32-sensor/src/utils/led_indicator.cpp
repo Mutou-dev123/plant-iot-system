@@ -5,6 +5,8 @@
 
 #include "led_indicator.h"
 
+#include "../config/pin_config.h"
+
 // 起動時のLED演出
 void initLEDs()
 {
