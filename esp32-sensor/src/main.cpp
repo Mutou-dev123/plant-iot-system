@@ -10,6 +10,7 @@
 
 #include "utils/logger.h"           // ログ表示の読込
 #include "utils/led_indicator.h"    // LEDインジケーターの読込
+#include "utils/time_manager.h"
 
 #include "network/wifi-manager.h"
 #include "network/api_client.h"
@@ -41,6 +42,9 @@ void setup()
     initLightSensor();
 
     // ここでWi-Fi接続処理が入る
+    connectWiFi();
+
+    initTime();
 
     Serial.println("Plant Sensor Start");
 }
@@ -59,7 +63,7 @@ void loop()
         lastReadTime = currentMillis; // 読み取り時間を更新
 
         SensorData data;
-        data.timestamp = currentMillis;
+        data.timestamp = getCurrentTimestamp();
 
         readDHT(data);
         readSoil(data);
@@ -70,8 +74,27 @@ void loop()
         isSoilError  = (data.soilRaw <= 0 || data.soilRaw >= 4095);  
         isLightError = (data.lightRaw <= 0 || data.lightRaw >= 4095);
 
-        // ログ表示（センサーエラー＆センサーデータ）
-        printSensorLog(data, isDhtError, isSoilError, isLightError);
+        //==============================
+        // ログ表示
+        //==============================
+
+        // システム異常
+        printSystemAlert(
+            isDhtError,
+            isSoilError,
+            isLightError
+        );
+
+        // 計測時刻
+        printTimeLog(data.timestamp);
+
+        // センサーデータ
+        printSensorLog(
+            data,
+            isDhtError,
+            isSoilError,
+            isLightError
+        );
 
         // すべてのセンサーが正常ならDjangoへ送信
         if (!isDhtError && !isSoilError && !isLightError)
