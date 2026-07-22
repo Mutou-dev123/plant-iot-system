@@ -13,6 +13,7 @@
 # ※このサービスを中心に他のサービスを動かす
 
 import json
+from datetime import datetime
 
 from django.utils import timezone
 
@@ -32,7 +33,48 @@ class SensorService:
         print("===== Receive =====")
         print(data)
 
+        # バリデーション
+        ValidatorService.validate(data)
+
+        # Device取得
+        device = DeviceService.get_or_create(
+            data["deviceName"]
+        )
+
+        # 日時変換
+        measured_at = datetime.fromtimestamp(
+            data["timestamp"],
+            tz=timezone.get_current_timezone()
+        )
+
+        # ラズパイ受信日時
+        received_at = timezone.now()
+
+        # データ変換
+        # 土壌水分（％）に変換
+        moisture = ConversionService.calculate_moisture(
+            data["soilRaw"]
+        )
+
+        # 光量スコアに変換
+        light = ConversionService.calculate_light_score(
+            data["lightRaw"]
+        )
+
+        # DB保存
+        SensorLog.objects.create(
+            device=device,
+            measured_at=measured_at,
+            received_at=received_at,
+            soil_raw=data["soilRaw"],
+            light_raw=data["lightRaw"],
+            moisture=moisture,
+            light=light,
+            temperature=data["temperature"],
+            humidity=data["humidity"]
+        )
+
         return {
             "status": "success",
-            "next_interval": 300
+            "next_interval": device.interval_seconds
         }
