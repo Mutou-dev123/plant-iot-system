@@ -70,10 +70,10 @@ void loop()
         readLight(data);
 
         // センサーエラー判定
-        isDhtError = !data.isValid; 
-        isSoilError  = (data.soilRaw <= 0 || data.soilRaw >= 4095);  
-        isLightError = (data.lightRaw <= 0 || data.lightRaw >= 4095);
-
+        isDhtError = !data.dhtValid; 
+        isSoilError = !data.soilValid;
+        isLightError = !data.lightValid;
+        
         //==============================
         // ログ表示
         //==============================
@@ -96,26 +96,26 @@ void loop()
             isLightError
         );
 
-        // すべてのセンサーが正常ならDjangoへ送信
-        if (!isDhtError && !isSoilError && !isLightError)
-        {
-            Serial.println("Sending data to Django ...");
-            int nextIntervalSec = sendSensorData(data);
+        //==============================
+        // データ送信
+        //==============================
 
-            if (nextIntervalSec > 0)
-            {
-                // 送信成功時：Djangoから届いた秒数をミリ秒に変換して次のタイマーにセット
-                currentInterval = (unsigned long)nextIntervalSec * 1000;
-                Serial.print("Interval updated by Django");
-                Serial.print(nextIntervalSec);
-                Serial.println(" sec");
-            }
-            else
-            {
-                // 送信失敗時：一時的に10秒後にトライ
-                Serial.println("Failed to send data. Retry after 30 seconds.");
-                currentInterval = 30000;
-            }
+        Serial.println("Sending data to Django ...");
+        int nextIntervalSec = sendSensorData(data);
+
+        if (nextIntervalSec > 0)
+        {
+            // 送信成功時：Djangoから届いた秒数をミリ秒に変換して次のタイマーにセット
+            currentInterval = (unsigned long)nextIntervalSec * 1000;
+            Serial.print("Interval updated by Django ");
+            Serial.print(nextIntervalSec);
+            Serial.println(" sec");
+        }
+        else
+        {
+            // 送信失敗時：一時的に10秒後にトライ
+            Serial.println("Failed to send data. Retry after 30 seconds.");
+            currentInterval = 30000;
         }
     }
 

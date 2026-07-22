@@ -24,4 +24,7 @@ void readSoil(SensorData &data)
 {
     // ADC値を取得
     data.soilRaw = analogRead(SOIL_PIN);
+
+    // データ取得成功判定
+    data.soilValid = !(data.soilRaw <= 0 || data.soilRaw >= 4095);
 }

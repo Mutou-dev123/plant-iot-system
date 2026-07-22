@@ -37,5 +37,5 @@ void readDHT(SensorData &data)
     data.humidity = dht.readHumidity();
 
     // データ取得成功判定
-    data.isValid = !(isnan(data.temperature) || isnan(data.humidity));
+    data.dhtValid = !(isnan(data.temperature) || isnan(data.humidity));
 }
