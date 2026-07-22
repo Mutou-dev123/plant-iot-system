@@ -50,7 +50,7 @@ def index(request):
 def api_receive_data(request):
 
     # POST以外は拒否
-    if request.method == 'POST':
+    if request.method != 'POST':
         return JsonResponse(
             {"status": "invalid_method"},
             status=405

@@ -13,6 +13,7 @@
 # ※このサービスを中心に他のサービスを動かす
 
 import json
+from datetime import datetime
 
 from django.utils import timezone
 
@@ -29,10 +30,10 @@ class SensorService:
         # JSON読み込み
         data = json.loads(request_body)
 
-        # 現在時刻取得
-        timestamp = data.get("timestamp")
+        print("===== Receive =====")
+        print(data)
 
-        # JSONバリデーション
+        # バリデーション
         ValidatorService.validate(data)
 
         # Device取得
@@ -40,11 +41,22 @@ class SensorService:
             data["deviceName"]
         )
 
+        # 日時変換
+        measured_at = datetime.fromtimestamp(
+            data["timestamp"],
+            tz=timezone.get_current_timezone()
+        )
+
+        # ラズパイ受信日時
+        received_at = timezone.now()
+
         # データ変換
+        # 土壌水分（％）に変換
         moisture = ConversionService.calculate_moisture(
             data["soilRaw"]
         )
 
+        # 光量スコアに変換
         light = ConversionService.calculate_light_score(
             data["lightRaw"]
         )
@@ -52,7 +64,8 @@ class SensorService:
         # DB保存
         SensorLog.objects.create(
             device=device,
-            timestamp=timestamp or timezone.now(),
+            measured_at=measured_at,
+            received_at=received_at,
             soil_raw=data["soilRaw"],
             light_raw=data["lightRaw"],
             moisture=moisture,

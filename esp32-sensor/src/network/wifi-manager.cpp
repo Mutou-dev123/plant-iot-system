@@ -15,10 +15,18 @@
 
 void connectWiFi()
 {
+    Serial.print("Connecting to Wi-Fi");
+
     WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
 
     while (WiFi.status() != WL_CONNECTED)
     {
+        Serial.print(".");
         delay(500);
     }
+
+    Serial.println();
+    Serial.println("Connected!");
+    Serial.print("IP Address: ");
+    Serial.println(WiFi.localIP());
 }
