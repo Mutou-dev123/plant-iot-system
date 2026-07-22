@@ -77,7 +77,7 @@ class SensorLog(models.Model):
 
     # Raspberry Piで受信した日時
     received_at = models.DateTimeField(
-        default=timezone.now(),
+        default=timezone.now,
         verbose_name="受信日時"
     )
 
