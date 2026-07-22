@@ -13,12 +13,12 @@
 #include "../config/config.h"
 
 
-bool sendSensorData(const SensorData& data)
+int sendSensorData(const SensorData& data)
 {
     // Wi-Fi未接続なら送信しない
     if (WiFi.status() != WL_CONNECTED)
     {
-        return false;
+        return -1;
     }
 
     //========================
@@ -27,7 +27,7 @@ bool sendSensorData(const SensorData& data)
 
     JsonDocument doc;
 
-    doc["plantId"] = data.plantId;
+    doc["deviceName"] = DEVICE_NAME;
     doc["timestamp"] = data.timestamp;
 
     doc["temperature"] = data.temperature;
@@ -44,13 +44,32 @@ bool sendSensorData(const SensorData& data)
     //========================
 
     HTTPClient http;
+    int nextInterval = 300;
 
     http.begin(API_URL);
     http.addHeader("Content-Type", "application/json");
 
     int httpCode = http.POST(json);
 
+    if (httpCode >= 200 && httpCode < 300)
+    {
+        String response = http.getString();
+
+        JsonDocument resDoc;
+        deserializeJson(resDoc, response);
+
+        // Djangoから計測間隔設定を受け取る
+        if (resDoc.containsKey("next_interval"))
+        {
+            nextInterval = resDoc["next_interval"];
+        }
+    }
+    else
+    {
+        nextInterval = -1;  // 送信失敗フラグ
+    }
+
     http.end();
 
-    return (httpCode >= 200 && httpCode < 300);
+    return nextInterval;
 }

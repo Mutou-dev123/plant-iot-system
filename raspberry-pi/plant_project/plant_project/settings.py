@@ -25,7 +25,8 @@ SECRET_KEY = 'django-insecure-zu=dm6)a)t+6p7d+brmhagofnnomrq7r$=-@t$ngv9(yymb#13
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+# 許可するホスト
+ALLOWED_HOSTS = ["*"]
 
 
 # Application definition
@@ -55,7 +56,9 @@ ROOT_URLCONF = 'plant_project.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [
+            BASE_DIR / 'templates'
+        ],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -103,16 +106,19 @@ AUTH_PASSWORD_VALIDATORS = [
 # Internationalization
 # https://docs.djangoproject.com/en/6.0/topics/i18n/
 
-LANGUAGE_CODE = 'en-us'
+# 英語から日本語に変更
+LANGUAGE_CODE = 'ja'
 
-TIME_ZONE = 'UTC'
+# UTC(世界標準時)から日本時間に変更
+TIME_ZONE = 'Asia/Tokyo'
 
 USE_I18N = True
-
 USE_TZ = True
-
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/6.0/howto/static-files/
 
 STATIC_URL = 'static/'
+
+# すべてのモデルのIDをBigAutoFieldにする
+DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'

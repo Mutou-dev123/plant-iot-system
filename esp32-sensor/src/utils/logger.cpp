@@ -5,6 +5,8 @@
 
 #include "logger.h"
 
+#include "../models/sensor_data.h"
+
 void printSensorLog(const SensorData& data, bool isDhtError, bool isSoilError, bool isLightError)
 {
     //==============================
@@ -36,7 +38,6 @@ void printSensorLog(const SensorData& data, bool isDhtError, bool isSoilError, b
     // データ表示
     //==============================
 
-    Serial.printf("Plant ID     : %d\n", data.plantId);
     Serial.printf("Timestamp    : %lu ms\n", data.timestamp);
     
     // 温湿度
