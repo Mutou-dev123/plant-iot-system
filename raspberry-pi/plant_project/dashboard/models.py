@@ -70,7 +70,16 @@ class SensorLog(models.Model):
     # デバイスが削除されたら、そのデバイスのログも一緒に消す設定
     device = models.ForeignKey(Device, on_delete=models.CASCADE, verbose_name="測定デバイス")
 
-    timestamp = models.DateTimeField(default=timezone.now, verbose_name="取得日時")
+    # ESP32で計測した日時
+    measured_at = models.DateTimeField(
+        verbose_name="計測日時"
+    )
+
+    # Raspberry Piで受信した日時
+    received_at = models.DateTimeField(
+        default=timezone.now(),
+        verbose_name="受信日時"
+    )
 
     # --- センサー生データ ---
     soil_raw = models.IntegerField(null=True, blank=True, verbose_name="土壌水分(生)")
@@ -86,4 +95,7 @@ class SensorLog(models.Model):
         db_table = 'sensor_logs'
 
     def __str__(self):
-        return f"{self.device.device_name} - {self.timestamp.strftime('%Y-%m-%d %H:%M')}"
+        return (
+            f"{self.device.device_name}"
+            f" - {self.measured_at.strftime('%Y-%m-%d %H:%M')}"
+        )

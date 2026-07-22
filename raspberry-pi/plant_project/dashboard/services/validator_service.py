@@ -12,6 +12,7 @@ class ValidatorService:
 
     REQUIRED_FIELDS = [
         "deviceName",
+        "timestamp",
         "temperature",
         "humidity",
         "soilRaw",

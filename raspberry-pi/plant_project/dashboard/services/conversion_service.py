@@ -41,7 +41,7 @@ class ConversionService:
     @staticmethod
     def calculate_light_score(raw):
 
-        if raw in None:
+        if raw is None:
             return 0.0
 
         # スコア変換式
