@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+
+{% block title %}植物管理{% endblock %}
+
+{% block content %}
+
+<h1>植物管理</h1>
+
+<table>
+    <thead>
+        <tr>
+            <th>植物名</th>
+            <th>種類</th>
+            <th>開始日</th>
+        </tr>
+    </thead>
+
+    <tbody>
+
+        <!-- 登録済みがあるかどうか -->
+        {% for plant in plants %}
+            <tr>
+                <td>{{ plant.custom_name }}</td>
+                <td>{{ plant.plant_master.name }}</td>
+                <td>{{ plant.start_date }}</td>
+            </tr>
+        {% empty %}
+            <tr>
+                <td colspan="3">植物が登録されていません。</td>
+            </tr>
+        {% endfor %}
+
+    </tbody>
+</table>
+
+{% endblock %}

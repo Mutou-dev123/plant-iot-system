@@ -12,6 +12,10 @@
         {% endblock %}
     </title>
 
+    <!-- 共通CSS読み込み -->
+    <link rel="stylesheet" href="{% static 'css/base.css' %}">
+    <link rel="stylesheet" href="{% static 'css/menu.css' %}">
+
     {% block css %}
     {% endblock %}
 </head>
@@ -32,6 +36,25 @@
 
     </header>
 
+    <!-- サイドメニュー -->
+    <nav id="sidebar">
+
+        <ul>
+
+            <li>
+                <a href="{% url 'dashboard' %}">
+                    📊 ダッシュボード
+                </a>
+            </li>
+
+            <li>
+                <a href="{% url 'plant_list' %}">
+                    🌱 植物一覧
+                </a>
+            </li>
+        </ul>
+    </nav>
+
     <main>
 
         {% block content %}
@@ -39,9 +62,12 @@
 
     </main>
 
+    <!-- 共通JS -->
     <script src="{% static 'js/clock.js' %}"></script>
+    <script src="{% static 'js/menu.js' %}"></script>
 
-    {% block content %}
+    <!-- ページごとのJS -->
+    {% block js %}
     {% endblock %}
     
 </body>

@@ -1,10 +1,48 @@
 from django.urls import path
-from . import views
+
+from .views import dashboard
+from .views import plants
+from .views import api
 
 urlpatterns = [
-    # ダッシュボード
-    path('', views.index, name='index'),
 
-    # ESP32からのデータ受け取り用API
-    path('api/receive', views.api_receive_data, name='api_receive_data'),
+    # ==========================================
+    # ダッシュボード
+    # ==========================================
+
+    path(
+        "",
+        dashboard.index,
+        name="dashboard",
+    ),
+
+    # ==========================================
+    # 植物管理
+    # ==========================================
+
+    path(
+        "plants/",
+        plants.index,
+        name="plant_list",
+    ),
+
+    # ==========================================
+    # デバイス管理
+    # ==========================================
+    
+    #path(
+    #    "devices/",
+    #    devices.index,
+    #    name="devices",
+    #),
+
+    # ==========================================
+    # API
+    # ==========================================
+
+    path(
+        "api/receive",
+        api.receive_data,
+        name="api_receive_data",
+    ),
 ]
