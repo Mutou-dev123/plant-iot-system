@@ -20,6 +20,6 @@ def index(request):
 
     return render(
         request,
-        "plants/index.html",
+        "plants/plant_list.html",
         context
     )
