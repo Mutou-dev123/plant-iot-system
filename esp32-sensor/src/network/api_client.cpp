@@ -11,7 +11,7 @@
 #include <ArduinoJson.h>
 
 #include "../config/config.h"
-
+#include "../utils/logger.h"
 
 int sendSensorData(const SensorData& data)
 {
@@ -58,16 +58,20 @@ int sendSensorData(const SensorData& data)
         JsonDocument resDoc;
         deserializeJson(resDoc, response);
 
-        // Djangoから計測間隔設定を受け取る
-        if (resDoc.containsKey("next_interval"))
+        JsonVariant value = resDoc["next_interval"];
+
+        if (value.is<int>())
         {
-            nextInterval = resDoc["next_interval"];
+            nextInterval = value.as<int>();
         }
+
     }
     else
     {
         nextInterval = -1;  // 送信失敗フラグ
     }
+
+    printNetworkLog(httpCode, nextInterval);
 
     http.end();
 
