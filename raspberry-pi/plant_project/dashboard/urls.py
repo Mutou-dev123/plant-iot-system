@@ -48,6 +48,13 @@ urlpatterns = [
         name="plant_edit",
     ),
 
+    # 削除
+    path(
+        "plants/<int:plant_id>/delete/",
+        plants.delete,
+        name="plant_delete",
+    ),
+
     # ==========================================
     # デバイス管理
     # ==========================================

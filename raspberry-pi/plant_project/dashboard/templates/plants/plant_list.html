@@ -34,13 +34,42 @@
                 <td>{{ plant.plant_master.name }}</td>
                 <td>{{ plant.start_date }}</td>
                 <td>
-                    <a href="{% url 'plant_detail' plant.id %}">
+
+                    <!-- 詳細ボタン -->
+                    <a
+                        href="{% url 'plant_detail' plant.id %}"
+                        class="button button-detail"
+                    >
                         詳細
                     </a>
 
-                    <a href="{% url 'plant_edit' plant.id %}">
+                    <!-- 編集ボタン -->
+                    <a
+                        href="{% url 'plant_edit' plant.id %}"
+                        class="button button-edit"
+                    >
                         編集
                     </a>
+
+                    <!-- 削除ボタン -->
+                    <form
+                        action="{% url 'plant_delete' plant.id %}"
+                        method="post"
+                        onsubmit="return confirm('「{{ plant.custom_name }}」を削除しますか？');"
+                        class="inline-form"
+                    >
+
+                        {% csrf_token %}
+
+                        <button
+                            type="submit"
+                            class="button button-delete"
+                        >
+                            削除
+                        </button>
+
+                    </form>
+
                 </td>
             </tr>
         {% empty %}

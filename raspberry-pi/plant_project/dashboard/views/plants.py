@@ -115,3 +115,17 @@ def edit(request, plant_id):
         context,
     )
 
+# ==========================================
+# 5. 削除
+# ==========================================
+def delete(request, plant_id):
+
+    plant = get_object_or_404(
+        MyPlant,
+        pk=plant_id,
+    )
+
+    if request.method == "POST":
+        plant.delete()
+
+    return redirect("plant_list")
