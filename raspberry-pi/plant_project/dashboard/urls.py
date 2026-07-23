@@ -17,13 +17,28 @@ urlpatterns = [
     ),
 
     # ==========================================
-    # 植物管理
+    # 育成植物管理
     # ==========================================
 
+    # 一覧
     path(
         "plants/",
         plants.index,
         name="plant_list",
+    ),
+
+    # 作成
+    path(
+        "plants/create/",
+        plants.create,
+        name="plant_create",
+    ),
+
+    # 編集
+    path(
+        "plants/<int:plant_id>/edit/",
+        plants.edit,
+        name="plant_edit",
     ),
 
     # ==========================================
