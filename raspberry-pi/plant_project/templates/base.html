@@ -12,10 +12,11 @@
         {% endblock %}
     </title>
 
-    <!-- 共通CSS読み込み -->
+    <!-- 共通CSS -->
     <link rel="stylesheet" href="{% static 'css/base.css' %}">
     <link rel="stylesheet" href="{% static 'css/menu.css' %}">
 
+    <!-- ページごとのCSS -->
     {% block css %}
     {% endblock %}
 </head>
