@@ -26,10 +26,18 @@
         <!-- 登録済みがあるかどうか -->
         {% for plant in plants %}
             <tr>
-                <td>{{ plant.custom_name }}</td>
+                <td>
+                    <a href="{% url 'plant_detail' plant.id %}">
+                        {{ plant.custom_name }}
+                    </a>
+                </td>
                 <td>{{ plant.plant_master.name }}</td>
                 <td>{{ plant.start_date }}</td>
                 <td>
+                    <a href="{% url 'plant_detail' plant.id %}">
+                        詳細
+                    </a>
+
                     <a href="{% url 'plant_edit' plant.id %}">
                         編集
                     </a>
@@ -38,6 +46,12 @@
         {% empty %}
             <tr>
                 <td colspan="4">植物が登録されていません。</td>
+
+                <td>
+                    <a href="{% url 'plant_create' %}">
+                        植物登録はこちらから
+                    </a>
+                </td>
             </tr>
         {% endfor %}
 

@@ -10,7 +10,7 @@ from dashboard.forms import PlantForm
 
 
 # ==========================================
-# 1. 育成植物一覧
+# 1. 一覧
 # ==========================================
 def index(request):
 
@@ -28,7 +28,28 @@ def index(request):
 
 
 # ==========================================
-# 2. 育成植物登録
+# 2. 詳細
+# ==========================================
+def detail(request, plant_id):
+
+    plant = get_object_or_404(
+        MyPlant,
+        pk=plant_id,
+    )
+
+    context = {
+        "plant": plant,
+    }
+
+    return render(
+        request,
+        "plants/plant_detail.html",
+        context,
+    )
+
+
+# ==========================================
+# 3. 作成
 # ==========================================
 def create(request):
 
@@ -56,7 +77,7 @@ def create(request):
     )
 
 # ==========================================
-# 3. 育成植物編集
+# 4. 編集
 # ==========================================
 def edit(request, plant_id):
 
@@ -93,3 +114,4 @@ def edit(request, plant_id):
         "plants/plant_form.html",
         context,
     )
+

@@ -33,6 +33,13 @@ urlpatterns = [
         plants.create,
         name="plant_create",
     ),
+    
+    # 詳細
+    path(
+        "plants/<int:plant_id>/",
+        plants.detail,
+        name="plant_detail",
+    ),
 
     # 編集
     path(

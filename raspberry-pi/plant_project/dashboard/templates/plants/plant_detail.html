@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+
+{% block title %}
+    {{ plant.custom_name }}
+{% endblock %}
+
+{% block content %}
+
+<h1>{{ plant.custom_name }}</h1>
+
+<table>
+
+    <tr>
+        <th>植物名</th>
+        <td>{{ plant.custom_name }}</td>
+    </tr>
+
+    <tr>
+        <th>栽培開始日</th>
+        <td>{{ plant.start_date }}</td>
+    </tr>
+
+</table>
+
+<p>
+
+    <a href="{% url 'plant_edit' plant.id %}">
+        編集
+    </a>
+
+</p>
+
+{% endblock %}
