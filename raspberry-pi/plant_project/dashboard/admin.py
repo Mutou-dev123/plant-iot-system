@@ -4,7 +4,7 @@ from django.contrib import admin
 
 from.models import (
     PlantMaster,
-    MyPlant,
+    Plant,
     Device,
     SensorLog
 )
@@ -26,5 +26,5 @@ class SensorLogAdmin(admin.ModelAdmin):
     ordering = ("-measured_at",)
 
 admin.site.register(PlantMaster)
-admin.site.register(MyPlant)
+admin.site.register(Plant)
 admin.site.register(Device)

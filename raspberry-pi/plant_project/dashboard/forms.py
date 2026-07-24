@@ -1,11 +1,11 @@
 from django import forms
 
-from dashboard.models import MyPlant
+from dashboard.models import Plant
 
 class PlantForm(forms.ModelForm):
 
     class Meta:
-        model = MyPlant
+        model = Plant
 
         fields = [
             "custom_name",

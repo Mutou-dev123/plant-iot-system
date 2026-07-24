@@ -4,7 +4,7 @@
 
 from django.shortcuts import render, redirect, get_object_or_404
 
-from dashboard.models import MyPlant
+from dashboard.models import Plant
 
 from dashboard.forms import PlantForm
 
@@ -14,7 +14,7 @@ from dashboard.forms import PlantForm
 # ==========================================
 def index(request):
 
-    plants = MyPlant.objects.all()
+    plants = Plant.objects.all()
 
     context = {
         "plants": plants,
@@ -33,7 +33,7 @@ def index(request):
 def detail(request, plant_id):
 
     plant = get_object_or_404(
-        MyPlant,
+        Plant,
         pk=plant_id,
     )
 
@@ -82,7 +82,7 @@ def create(request):
 def edit(request, plant_id):
 
     plant = get_object_or_404(
-        MyPlant,
+        Plant,
         pk=plant_id,
     )
 
@@ -121,7 +121,7 @@ def edit(request, plant_id):
 def delete(request, plant_id):
 
     plant = get_object_or_404(
-        MyPlant,
+        Plant,
         pk=plant_id,
     )
 
