@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+
+{% block title %}
+    {{ plant.custom_name }}
+{% endblock %}
+
+{% block content %}
+
+<h1>{{ plant.custom_name }}</h1>
+
+<table>
+
+    <tr>
+        <th>植物名</th>
+        <td>{{ plant.custom_name }}</td>
+    </tr>
+
+    <tr>
+        <th>栽培開始日</th>
+        <td>{{ plant.start_date }}</td>
+    </tr>
+
+</table>
+
+<div class="action-buttons">
+
+    <a
+        href="{% url 'plant_edit' plant.id %}"
+        class="button button-edit"
+    >
+        編集
+    </a>
+
+    <form
+        action="{% url 'plant_delete' plant.id %}"
+        method="post"
+        onsubmit="return confirm('「{{ plant.custom_name }}」を削除しますか？');"
+        class="inline-form"
+    >
+
+        {% csrf_token %}
+
+        <button
+            type="submit"
+            class="button button-delete"
+        >
+            削除
+        </button>
+
+    </form>
+
+</div>
+
+{% endblock %}
