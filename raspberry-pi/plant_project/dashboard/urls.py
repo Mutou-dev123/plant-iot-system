@@ -23,35 +23,35 @@ urlpatterns = [
     # 一覧
     path(
         "plants/",
-        plants.index,
+        plants.plant_list,
         name="plant_list",
     ),
 
     # 作成
     path(
         "plants/create/",
-        plants.create,
+        plants.plant_create,
         name="plant_create",
     ),
     
     # 詳細
     path(
         "plants/<int:plant_id>/",
-        plants.detail,
+        plants.plant_detail,
         name="plant_detail",
     ),
 
     # 編集
     path(
         "plants/<int:plant_id>/edit/",
-        plants.edit,
+        plants.plant_edit,
         name="plant_edit",
     ),
 
     # 削除
     path(
         "plants/<int:plant_id>/delete/",
-        plants.delete,
+        plants.plant_delete,
         name="plant_delete",
     ),
 
