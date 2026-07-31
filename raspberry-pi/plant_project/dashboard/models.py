@@ -1,5 +1,7 @@
 from django.db import models
 from django.utils import timezone
+from django.core.validators import MinValueValidator, MaxValueValidator
+from django.core.exceptions import ValidationError
 
 
 # ==============================
@@ -24,57 +26,90 @@ class PlantMaster(models.Model):
     optimal_temperature_min = models.FloatField(
         null=True,
         blank=True,
-        verbose_name="適正温度（下限 ℃）"
+        validators=[
+            MinValueValidator(-20),
+            MaxValueValidator(60),
+        ],
+        verbose_name="下限 (℃)"
     )
 
     optimal_temperature_max = models.FloatField(
         null=True,
         blank=True,
-        verbose_name="適正温度（上限 ℃）"
+        validators=[
+            MinValueValidator(-20),
+            MaxValueValidator(60),
+        ],
+        verbose_name="上限 (℃)"
     )
 
     # 【適正湿度】
     optimal_humidity_min = models.FloatField(
         null=True,
         blank=True,
-        verbose_name="適正湿度（下限 %）"
+        validators=[
+            MinValueValidator(0),
+            MaxValueValidator(100),
+        ],
+        verbose_name="下限 (%)"
     )
 
     optimal_humidity_max = models.FloatField(
         null=True,
         blank=True,
-        verbose_name="適正湿度（上限 %）"
+        validators=[
+            MinValueValidator(0),
+            MaxValueValidator(100),
+        ],
+        verbose_name="上限 (%)"
     )
 
     # 【適正土壌水分】
     optimal_moisture_min = models.FloatField(
         null=True,
         blank=True,
-        verbose_name="適正土壌水分（下限 %）"
+        validators=[
+            MinValueValidator(0),
+            MaxValueValidator(100),
+        ],
+        verbose_name="下限 (%)"
     )
 
     optimal_moisture_max = models.FloatField(
         null=True,
         blank=True,
-        verbose_name="適正土壌水分（上限 %）"
+        validators=[
+            MinValueValidator(0),
+            MaxValueValidator(100),
+        ],
+        verbose_name="上限 (%)"
     )
 
     # 【適正光量】
     optimal_light_min = models.FloatField(
         null=True,
         blank=True,
-        verbose_name="適正光量スコア（下限）"
+        validators=[
+            MinValueValidator(0),
+        ],
+        verbose_name="下限"
     )
 
     optimal_light_max = models.FloatField(
         null=True,
         blank=True,
-        verbose_name="適正光量スコア（上限）"
+        validators=[
+            MinValueValidator(0),
+        ],
+        verbose_name="上限"
     )
 
-    # 【必要光量】
+    # 【目標日照スコア】
     target_light_score = models.FloatField(
         default=30000.0,
+        validators=[
+            MinValueValidator(0),
+        ],
         verbose_name="目標日照スコア（1日）"
     )
 
@@ -91,7 +126,27 @@ class PlantMaster(models.Model):
 
     def __str__(self):
         return self.name
-    
+
+    def clean(self):
+        errors = {}
+
+        self._validate_range(errors, "optimal_temperature_min", "optimal_temperature_max", "温度")
+        self._validate_range(errors, "optimal_humidity_min", "optimal_humidity_max", "湿度")
+        self._validate_range(errors, "optimal_moisture_min", "optimal_moisture_max", "土壌水分")
+        self._validate_range(errors, "optimal_light_min", "optimal_light_max", "光量")
+
+        if errors:
+            raise ValidationError(errors)
+
+    def _validate_range(self, errors, min_field, max_field, label):
+        minimum = getattr(self, min_field)
+        maximum = getattr(self, max_field)
+
+        if minimum is not None and maximum is not None:
+            if minimum > maximum:
+                errors.setdefault("__all__", []).append(
+                    f"{label}の上限は下限以上にしてください。"
+                )
 
 # ==============================
 # 2. 育成植物 (Plant)
