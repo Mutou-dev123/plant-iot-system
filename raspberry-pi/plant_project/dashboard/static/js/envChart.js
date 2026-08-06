@@ -1,36 +1,37 @@
 // Chart.jsを用いた直近の観測履歴のグラフ描画JavaScript
 
-// ここでは描画ロジックのみを記述する
 const canvas = document.getElementById("envChart");
+
+let envChart = null;
 
 if (canvas && typeof timeLabels !== "undefined") {
 
     const ctx = canvas.getContext("2d");
 
-    new Chart(ctx, {
-        type: 'line',
+    envChart = new Chart(ctx, {
+        type: "line",
         data: {
-            labels: timeLabels, // HTML側で作られた配列を使用
+            labels: timeLabels,
             datasets: [
                 {
-                    label: '土壌水分（％）',
+                    label: "土壌水分（％）",
                     data: moistureData,
-                    borderColor: '#0dcaf0',
-                    backgroundColor: 'rgba(13, 202, 240, 0.1)',
+                    borderColor: "#0dcaf0",
+                    backgroundColor: "rgba(13, 202, 240, 0.1)",
                     tension: 0.3
                 },
                 {
-                    label: '🌡️ 温度 (℃)',
+                    label: "🌡️ 温度 (℃)",
                     data: tempData,
-                    borderColor: '#dc3545',
-                    backgroundColor: 'rgba(220, 53, 69, 0.1)',
+                    borderColor: "#dc3545",
+                    backgroundColor: "rgba(220, 53, 69, 0.1)",
                     tension: 0.3
                 },
                 {
-                    label: '💨 湿度 (%)',
+                    label: "💨 湿度 (%)",
                     data: humidityData,
-                    borderColor: '#198754',
-                    backgroundColor: 'rgba(25, 135, 84, 0.1)',
+                    borderColor: "#198754",
+                    backgroundColor: "rgba(25, 135, 84, 0.1)",
                     tension: 0.3
                 }
             ]
@@ -38,13 +39,52 @@ if (canvas && typeof timeLabels !== "undefined") {
         options: {
             responsive: true,
             plugins: {
-                legend: { labels: { color: '#ffffff' } }
+                legend: {
+                    labels: {
+                        color: "#ffffff"
+                    }
+                }
             },
             scales: {
-                x: { grid: { color: '#333333' }, ticks: { color: '#aaaaaa' } },
-                y: { grid: { color: '#333333' }, ticks: { color: '#aaaaaa' }, min: 0, max: 100 }
+                x: {
+                    grid: { color: "#333333" },
+                    ticks: { color: "#aaaaaa" }
+                },
+                y: {
+                    grid: { color: "#333333" },
+                    ticks: { color: "#aaaaaa" },
+                    min: 0,
+                    max: 100
+                }
             }
         }
     });
+
+    // グラフ生成後にタイマー開始
+    setInterval(updateChart, 5000);
+}
+
+async function updateChart() {
+
+    if (!envChart) return;
+
+    try {
+
+        const response = await fetch("/api/chart-data/");
+        const data = await response.json();
+
+        envChart.data.labels = data.labels;
+
+        envChart.data.datasets[0].data = data.moisture;
+        envChart.data.datasets[1].data = data.temperature;
+        envChart.data.datasets[2].data = data.humidity;
+
+        envChart.update();
+
+    } catch (error) {
+
+        console.error(error);
+
+    }
 
 }

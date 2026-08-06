@@ -104,4 +104,10 @@ urlpatterns = [
         api.receive_data,
         name="api_receive_data",
     ),
+
+    path(
+        "api/chart-data/",
+        api.chart_data,
+        name="api_chart_data",
+    )
 ]
