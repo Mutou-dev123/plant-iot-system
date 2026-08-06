@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+
+{% block title %}
+    {{ device.device_name }}
+{% endblock %}
+
+{% block content %}
+
+<h1>{{ device.device_name }}</h1>
+
+<table>
+
+    <tr>
+        <th>デバイス名</th>
+        <td>{{ device.device_name }}</td>
+    </tr>
+
+    <tr>
+        <th>デバイスUUID</th>
+        <td>{{ device.device_uuid }}</td>
+    </tr>
+
+    <tr>
+        <th>観測対象の植物</th>
+        <td>
+            {% if device.plant %}
+                {{ device.plant.custom_name }}
+            {% else %}
+                未設定
+            {% endif %}
+        </td>
+    </tr>
+
+    <tr>
+        <th>Wi-Fi SSID</th>
+        <td>
+            {% if device.wifi_ssid %}
+                {{ device.wifi_ssid }}
+            {% else %}
+                未設定
+            {% endif %}
+        </td>
+    </tr>
+
+    <tr>
+        <th>計測間隔</th>
+        <td>{{ device.interval_seconds }} 秒</td>
+    </tr>
+
+</table>
+
+<div class="action-buttons">
+
+    <a
+        href="{% url 'device_edit' device.id %}"
+        class="button button-edit"
+    >
+        編集
+    </a>
+
+    <form
+        action="{% url 'device_delete' device.id %}"
+        method="post"
+        onsubmit="return confirm('「{{ device.device_name }}」を削除しますか？');"
+        class="inline-form"
+    >
+
+        {% csrf_token %}
+
+        <button
+            type="submit"
+            class="button button-delete"
+        >
+            削除
+        </button>
+
+    </form>
+
+</div>
+
+{% endblock %}

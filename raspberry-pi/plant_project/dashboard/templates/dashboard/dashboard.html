@@ -1,8 +1,47 @@
 {% extends "base.html" %}
 
+{% load static %}
+
 {% block title %}ダッシュボード{% endblock %}
 
 {% block content %}
 
+<h1>ダッシュボード</h1>
+
+<div class="chart-container">
+    <canvas id="envChart"></canvas>
+</div>
+
+{{ time_labels|json_script:"time-labels" }}
+{{ temp_data|json_script:"temp-data" }}
+{{ humidity_data|json_script:"humidity-data" }}
+{{ moisture_data|json_script:"moisture-data" }}
+
+{% endblock %}
+
+{% block js %}
+
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+
+const timeLabels =
+    JSON.parse(document.getElementById("time-labels").textContent);
+
+const tempData =
+    JSON.parse(document.getElementById("temp-data").textContent);
+
+const humidityData =
+    JSON.parse(document.getElementById("humidity-data").textContent);
+
+const moistureData =
+    JSON.parse(document.getElementById("moisture-data").textContent);
+
+const UPDATE_INTERVAL = Number("{{ interval|escapejs }}") * 1000;
+
+</script>
+
+<script src="{% static 'js/envChart.js' %}"></script>
 
 {% endblock %}

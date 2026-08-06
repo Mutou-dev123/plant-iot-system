@@ -1,0 +1,105 @@
+{% extends "base.html" %}
+
+{% block title %}デバイス管理{% endblock %}
+
+{% block content %}
+
+<h1>デバイス管理</h1>
+
+<!-- デバイス登録画面遷移ボタン -->
+<a href="{% url 'device_create' %}" class="button">
+    + デバイスを登録
+</a>
+
+<!-- デバイス一覧表 -->
+<table>
+    <thead>
+        <tr>
+            <th>デバイス名</th>
+            <th>観測対象</th>
+            <th>Wi-Fi</th>
+            <th>計測間隔</th>
+            <th>操作</th>
+        </tr>
+    </thead>
+
+    <tbody>
+
+        <!-- 登録済みがあるかどうか -->
+        {% for device in devices %}
+            <tr>
+                <td>
+                    <a href="{% url 'device_detail' device.id %}">
+                        {{ device.device_name }}
+                    </a>
+                </td>
+                <td>
+                    {% if device.plant %}
+                        {{ device.plant.custom_name }}
+                    {% else %}
+                        -
+                    {% endif %}
+                </td>
+
+                <td>{{ device.wifi_ssid|default:"-" }}</td>
+
+                <td>{{ device.interval_seconds }} 秒</td>
+
+                <td>
+
+                    <!-- 詳細ボタン -->
+                    <a
+                        href="{% url 'device_detail' device.id %}"
+                        class="button button-detail"
+                    >
+                        詳細
+                    </a>
+
+                    <!-- 編集ボタン -->
+                    <a
+                        href="{% url 'device_edit' device.id %}"
+                        class="button button-edit"
+                    >
+                        編集
+                    </a>
+
+                    <!-- 削除ボタン -->
+                    <form
+                        action="{% url 'device_delete' device.id %}"
+                        method="post"
+                        onsubmit="return confirm('「{{ device.device_name }}」を削除しますか？');"
+                        class="inline-form"
+                    >
+
+                        {% csrf_token %}
+
+                        <button
+                            type="submit"
+                            class="button button-delete"
+                        >
+                            削除
+                        </button>
+
+                    </form>
+
+                </td>
+
+            </tr>
+
+        {% empty %}
+
+            <tr>
+                <td colspan="4">デバイスが登録されていません。</td>
+
+                <td>
+                    <a href="{% url 'device_create' %}">
+                        デバイス登録はこちらから
+                    </a>
+                </td>
+            </tr>
+        {% endfor %}
+
+    </tbody>
+</table>
+
+{% endblock %}

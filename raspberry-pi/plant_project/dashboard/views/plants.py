@@ -12,7 +12,7 @@ from dashboard.forms import PlantForm
 # ==========================================
 # 1. 一覧
 # ==========================================
-def index(request):
+def plant_list(request):
 
     plants = Plant.objects.all()
 
@@ -30,7 +30,7 @@ def index(request):
 # ==========================================
 # 2. 詳細
 # ==========================================
-def detail(request, plant_id):
+def plant_detail(request, plant_id):
 
     plant = get_object_or_404(
         Plant,
@@ -51,7 +51,7 @@ def detail(request, plant_id):
 # ==========================================
 # 3. 作成
 # ==========================================
-def create(request):
+def plant_create(request):
 
     if request.method == "POST":
 
@@ -79,7 +79,7 @@ def create(request):
 # ==========================================
 # 4. 編集
 # ==========================================
-def edit(request, plant_id):
+def plant_edit(request, plant_id):
 
     plant = get_object_or_404(
         Plant,
@@ -118,7 +118,7 @@ def edit(request, plant_id):
 # ==========================================
 # 5. 削除
 # ==========================================
-def delete(request, plant_id):
+def plant_delete(request, plant_id):
 
     plant = get_object_or_404(
         Plant,
