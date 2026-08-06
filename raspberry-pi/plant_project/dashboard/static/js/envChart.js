@@ -61,8 +61,13 @@ if (canvas && typeof timeLabels !== "undefined") {
     });
 
     // グラフ生成後にタイマー開始
-    setInterval(updateChart, 5000);
+    setInterval(updateChart, UPDATE_INTERVAL);
 }
+
+let lastLabel =
+    timeLabels.length > 0
+        ? timeLabels[timeLabels.length - 1]
+        : null;
 
 async function updateChart() {
 
@@ -73,6 +78,15 @@ async function updateChart() {
         const response = await fetch("/api/chart-data/");
         const data = await response.json();
 
+        const newestLabel =
+            data.labels[data.labels.length - 1];
+
+        if (newestLabel === lastLabel) {
+            return;
+        }
+        
+        lastLabel = newestLabel;
+
         envChart.data.labels = data.labels;
 
         envChart.data.datasets[0].data = data.moisture;
@@ -80,6 +94,8 @@ async function updateChart() {
         envChart.data.datasets[2].data = data.humidity;
 
         envChart.update();
+
+        console.log("グラフ更新");
 
     } catch (error) {
 
