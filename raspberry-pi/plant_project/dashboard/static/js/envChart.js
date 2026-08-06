@@ -18,6 +18,9 @@ if (canvas && typeof timeLabels !== "undefined") {
                     data: moistureData,
                     borderColor: "#0dcaf0",
                     backgroundColor: "rgba(13, 202, 240, 0.1)",
+                    borderWidth: 3,
+                    pointRadius: 3,
+                    pointHoverRadius: 5,
                     tension: 0.3
                 },
                 {
@@ -25,6 +28,9 @@ if (canvas && typeof timeLabels !== "undefined") {
                     data: tempData,
                     borderColor: "#dc3545",
                     backgroundColor: "rgba(220, 53, 69, 0.1)",
+                    borderWidth: 3,
+                    pointRadius: 3,
+                    pointHoverRadius: 5,
                     tension: 0.3
                 },
                 {
@@ -32,27 +38,40 @@ if (canvas && typeof timeLabels !== "undefined") {
                     data: humidityData,
                     borderColor: "#198754",
                     backgroundColor: "rgba(25, 135, 84, 0.1)",
+                    borderWidth: 3,
+                    pointRadius: 3,
+                    pointHoverRadius: 5,
                     tension: 0.3
                 }
             ]
         },
         options: {
             responsive: true,
+            maintainAspectRatio: false,
             plugins: {
                 legend: {
+                    position: "top",
                     labels: {
-                        color: "#ffffff"
+                        color: "#333333",
+                        boxWidth: 20,
+                        padding: 20,
+                        font: {
+                            size: 14
+                        }
                     }
                 }
             },
             scales: {
                 x: {
-                    grid: { color: "#333333" },
-                    ticks: { color: "#aaaaaa" }
+                    grid: { color: "#dddddd" },
+                    ticks: { color: "#666666" }
                 },
                 y: {
-                    grid: { color: "#333333" },
-                    ticks: { color: "#aaaaaa" },
+                    grid: { color: "#dddddd" },
+                    ticks: {
+                        color: "#666666",
+                        stepSize: 20
+                    },
                     min: 0,
                     max: 100
                 }

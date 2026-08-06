@@ -1,0 +1,82 @@
+/*==============================
+  一覧画面共通
+==============================*/
+
+.list-header {
+
+    display: flex;
+
+    justify-content: space-between;
+
+    align-items: center;
+
+    margin-bottom: 25px;
+
+}
+
+.list-header h1 {
+
+    margin: 0;
+
+}
+
+/*==============================
+  一覧テーブル
+==============================*/
+
+.list-table {
+
+    width: 100%;
+
+    background: #ffffff;
+
+    border-radius: 15px;
+
+    overflow: hidden;
+
+    box-shadow: 0 3px 12px rgba(0,0,0,.08);
+
+}
+
+.list-table th {
+
+    background: #dff3dc;
+
+}
+
+.list-table tr:hover {
+
+    background: #f8fcf5;
+
+    transition: .2s;
+
+}
+
+/*==============================
+  操作ボタン
+==============================*/
+
+.action-buttons {
+
+    display: flex;
+
+    gap: 8px;
+
+    align-items: center;
+
+    flex-wrap: wrap;
+
+}
+
+.inline-form {
+
+    display: inline;
+
+}
+
+.action-buttons .button {
+
+    min-width: 70px;
+
+    text-align: center;
+}

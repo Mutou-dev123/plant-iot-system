@@ -1,0 +1,125 @@
+/*==============================
+  フォーム画面共通
+==============================*/
+
+.form-container {
+
+    max-width: 700px;
+
+    margin: 0 auto;
+
+}
+
+.form-title {
+
+    margin: 0 0 20px;
+
+    color: #2f5d34;
+
+}
+
+/*==============================
+  フォームカード
+==============================*/
+
+.form-card {
+
+    background: #ffffff;
+
+    border-radius: 15px;
+
+    padding: 30px;
+
+    box-shadow: 0 3px 12px rgba(0,0,0,.08);
+
+}
+
+/*==============================
+  フォーム項目
+==============================*/
+
+.form-group {
+
+    margin-bottom: 22px;
+
+}
+
+.form-group label {
+
+    display: block;
+
+    margin-bottom: 8px;
+
+    font-weight: bold;
+
+    color: #2f5d34;
+
+}
+
+/*==============================
+  入力欄
+==============================*/
+
+.form-input,
+select,
+input {
+
+    width: 100%;
+
+    padding: 12px 14px;
+
+    border: 1px solid #cfd8cf;
+
+    border-radius: 10px;
+
+    font-size: 1rem;
+
+    transition: .2s;
+
+    background: #ffffff;
+
+}
+
+.form-input:focus,
+select:focus,
+input:focus {
+
+    outline: none;
+
+    border-color: #4caf50;
+
+    box-shadow: 0 0 0 3px rgba(76,175,80,.15);
+
+}
+
+/*==============================
+  エラー
+==============================*/
+
+.errorlist {
+
+    margin: 8px 0 0;
+
+    padding: 0;
+
+    list-style: none;
+
+    color: #d32f2f;
+
+    font-size: .9rem;
+
+}
+
+/*==============================
+  ボタン
+==============================*/
+
+.form-actions {
+
+    display: flex;
+
+    justify-content: flex-end;
+
+    margin-top: 30px;
+
+}

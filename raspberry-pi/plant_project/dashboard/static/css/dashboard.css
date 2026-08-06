@@ -1,0 +1,57 @@
+/*==============================
+  ダッシュボード
+==============================*/
+
+.dashboard {
+
+    display: flex;
+    flex-direction: column;
+    gap: 25px;
+
+}
+
+/*==============================
+  グラフカード
+==============================*/
+
+.chart-container {
+
+    max-width: 1100px;
+
+    margin: 0 auto;
+
+    background: #ffffff;
+
+    padding: 20px;
+
+    border-radius: 15px;
+
+    box-shadow: 0 3px 12px rgba(0,0,0,.08);
+
+}
+
+/*==============================
+  グラフタイトル
+==============================*/
+
+.chart-title {
+
+    margin: 0 0 20px;
+
+    color: #2f5d34;
+
+    font-size: 1.2rem;
+
+}
+
+/*==============================
+  グラフサイズ
+==============================*/
+
+.chart-wrapper {
+
+    position: relative;
+
+    height: 420px;
+
+}

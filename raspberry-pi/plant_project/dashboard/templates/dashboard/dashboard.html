@@ -4,12 +4,33 @@
 
 {% block title %}ダッシュボード{% endblock %}
 
+{% block css %}
+<link
+    rel="stylesheet"
+    href="{% static 'css/dashboard.css' %}"
+>
+{% endblock %}
+
 {% block content %}
 
 <h1>ダッシュボード</h1>
 
+<p>
+    更新間隔：{{ interval }}秒
+</p>
+
 <div class="chart-container">
-    <canvas id="envChart"></canvas>
+
+    <h2 class="chart-title">
+        環境データ
+    </h2>
+    
+    <div class="chart-wrapper">
+
+        <canvas id="envChart"></canvas>
+
+    </div>
+    
 </div>
 
 {{ time_labels|json_script:"time-labels" }}

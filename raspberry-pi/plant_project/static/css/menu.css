@@ -8,10 +8,11 @@
     left: -250px;
     width: 250px;
     height: 100%;
-    background: white;
+    background: #ffffff;
     transition: left 0.3s ease;
     box-shadow: 2px 0 8px rgba(0,0,0,.2);
     padding-top: 70px;
+    border-right: 1px solid #dfead9;
 }
 
 #sidebar.open {
@@ -28,9 +29,22 @@
     display: block;
     padding: 15px 20px;
     text-decoration: none;
-    color: black;
+    color: #2f5d34;
+    transition: .2f;
 }
 
 #sidebar li a:hover {
-    background: #f0f0f0;
+    background: #e9f7e5;
+}
+
+main {
+
+    transition: margin-left 0.3s ease;
+
+}
+
+main.shift {
+
+    margin-left: 250px;
+
 }

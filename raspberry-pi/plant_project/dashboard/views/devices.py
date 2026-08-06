@@ -37,8 +37,21 @@ def device_detail(request, device_id):
         pk=device_id,
     )
 
+    latest_log = (
+        device.sensorlog_set
+        .order_by("-measured_at")
+        .first()
+    )
+
+    log_count = (
+        device.sensorlog_set
+        .count()
+    )
+
     context = {
         "device": device,
+        "latest_log": latest_log,
+        "log_count": log_count,
     }
 
     return render(

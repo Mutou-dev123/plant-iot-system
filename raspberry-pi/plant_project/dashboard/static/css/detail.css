@@ -1,0 +1,108 @@
+/*==============================
+  詳細画面共通
+==============================*/
+
+.detail-container {
+
+    max-width: 900px;
+
+    margin: 0 auto;
+
+}
+
+.detail-title {
+
+    margin: 0 0 20px;
+
+    color: #2f5d34;
+
+}
+
+.detail-card {
+
+    background: #ffffff;
+
+    border-radius: 15px;
+
+    padding: 25px;
+
+    box-shadow: 0 3px 12px rgba(0,0,0,.08);
+
+}
+
+/*==============================
+  詳細テーブル
+==============================*/
+
+.detail-table {
+
+    width: 100%;
+
+    border-collapse: collapse;
+
+}
+
+.detail-table tr {
+
+    transition: background .2s;
+
+}
+
+.detail-table tr:hover {
+
+    background: #f8fcf5;
+
+}
+
+.detail-table th {
+
+    width: 220px;
+
+    background: #dff3dc;
+
+    color: #2f5d34;
+
+    text-align: left;
+
+    font-weight: bold;
+
+}
+
+.detail-table td {
+
+    background: #ffffff;
+
+}
+
+.detail-table th,
+.detail-table td {
+
+    padding: 14px 18px;
+
+    border-bottom: 1px solid #eeeeee;
+
+}
+
+/*==============================
+  ボタン
+==============================*/
+
+.action-buttons {
+
+    display: flex;
+
+    justify-content: flex-end;
+
+    gap: 10px;
+
+    margin-top: 25px;
+
+    flex-wrap: wrap;
+
+}
+
+.inline-form {
+
+    display: inline;
+
+}

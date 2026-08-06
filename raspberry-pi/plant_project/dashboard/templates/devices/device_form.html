@@ -1,69 +1,98 @@
 {% extends "base.html" %}
 
+{% load static %}
+
 {% block title %}
     {{ title }}
 {% endblock %}
 
+{% block css %}
+<link
+    rel="stylesheet"
+    href="{% static 'css/form.css' %}"
+>
+{% endblock %}
+
 {% block content %}
 
-<h1>{{ title }}</h1>
+<div class="form-container">
 
-<form class="form" method="post">
+    <h1 class="form-title">
+        {{ title }}
+    </h1>
 
-    {% csrf_token %}
+    <div class="form-card">
 
-    <div class="form-group">
+        <form
+            class="form"
+            method="post"
+        >
 
-        <label for="{{ form.plant.id_for_label }}">
-            {{ form.plant.label }}
-        </label>
+            {% csrf_token %}
 
-        {{ form.plant }}
+            <div class="form-group">
 
-        {{ form.plant.errors }}
+                <label for="{{ form.plant.id_for_label }}">
+                    {{ form.plant.label }}
+                </label>
+
+                {{ form.plant }}
+
+                {{ form.plant.errors }}
+
+            </div>
+
+            <div class="form-group">
+
+                <label for="{{ form.device_name.id_for_label }}">
+                    {{ form.device_name.label }}
+                </label>
+
+                {{ form.device_name }}
+
+                {{ form.device_name.errors }}
+
+            </div>
+
+            <div class="form-group">
+
+                <label for="{{ form.wifi_ssid.id_for_label }}">
+                    {{ form.wifi_ssid.label }}
+                </label>
+
+                {{ form.wifi_ssid }}
+
+                {{ form.wifi_ssid.errors }}
+
+            </div>
+
+            <div class="form-group">
+
+                <label for="{{ form.interval_seconds.id_for_label }}">
+                    {{ form.interval_seconds.label }}
+                </label>
+
+                {{ form.interval_seconds }}
+
+                {{ form.interval_seconds.errors }}
+
+            </div>
+
+            <div class="form-actions">
+
+                <button
+                    class="button-primary"
+                    type="submit"
+                >
+                    {{ button }}
+                </button>
+
+            </div>
+
+        </form>
 
     </div>
 
-    <div class="form-group">
-
-        <label for="{{ form.device_name.id_for_label }}">
-            {{ form.device_name.label }}
-        </label>
-
-        {{ form.device_name }}
-
-        {{ form.device_name.errors }}
-
-    </div>
-
-    <div class="form-group">
-
-        <label for="{{ form.wifi_ssid.id_for_label }}">
-            {{ form.wifi_ssid.label }}
-        </label>
-
-        {{ form.wifi_ssid }}
-
-        {{ form.wifi_ssid.errors }}
-
-    </div>
-
-    <div class="form-group">
-
-        <label for="{{ form.interval_seconds.id_for_label }}">
-            {{ form.interval_seconds.label }}
-        </label>
-
-        {{ form.interval_seconds }}
-
-        {{ form.interval_seconds.errors }}
-
-    </div>
-
-    <button class="button-primary" type="submit">
-        {{ button }}
-    </button>
-
-</form>
+</div>
 
 {% endblock %}

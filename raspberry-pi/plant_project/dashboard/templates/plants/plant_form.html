@@ -1,57 +1,86 @@
 {% extends "base.html" %}
 
+{% load static %}
+
 {% block title %}
     {{ title }}
 {% endblock %}
 
+{% block css %}
+<link
+    rel="stylesheet"
+    href="{% static 'css/form.css' %}"
+>
+{% endblock %}
+
 {% block content %}
 
-<h1>{{ title }}</h1>
+<div class="form-container">
 
-<form class="form" method="post">
+    <h1 class="form-title">
+        {{ title }}
+    </h1>
 
-    {% csrf_token %}
+    <div class="form-card">
 
-    <div class="form-group">
+        <form
+            class="form"
+            method="post"
+        >
 
-        <label for="{{ form.custom_name.id_for_label }}">
-            {{ form.custom_name.label }}
-        </label>
+            {% csrf_token %}
 
-        {{ form.custom_name }}
+            <div class="form-group">
 
-        {{ form.custom_name.errors }}
+                <label for="{{ form.custom_name.id_for_label }}">
+                    {{ form.custom_name.label }}
+                </label>
+
+                {{ form.custom_name }}
+
+                {{ form.custom_name.errors }}
+
+            </div>
+
+            <div class="form-group">
+
+                <label for="{{ form.plant_master.id_for_label }}">
+                    {{ form.plant_master.label }}
+                </label>
+
+                {{ form.plant_master }}
+
+                {{ form.plant_master.errors }}
+
+            </div>
+
+            <div class="form-group">
+
+                <label for="{{ form.start_date.id_for_label }}">
+                    {{ form.start_date.label }}
+                </label>
+
+                {{ form.start_date }}
+
+                {{ form.start_date.errors }}
+
+            </div>
+
+            <div class="form-actions">
+
+                <button
+                    class="button-primary"
+                    type="submit"
+                >
+                    {{ button }}
+                </button>
+
+            </div>
+
+        </form>
 
     </div>
 
-    <div class="form-group">
-
-        <label for="{{ form.plant_master.id_for_label }}">
-            {{ form.plant_master.label }}
-        </label>
-
-        {{ form.plant_master }}
-
-        {{ form.plant_master.errors }}
-
-    </div>
-
-    <div class="form-group">
-
-        <label for="{{ form.start_date.id_for_label }}">
-            {{ form.start_date.label }}
-        </label>
-
-        {{ form.start_date }}
-
-        {{ form.start_date.errors }}
-
-    </div>
-
-    <button class="button-primary" type="submit">
-        {{ button }}
-    </button>
-
-</form>
+</div>
 
 {% endblock %}

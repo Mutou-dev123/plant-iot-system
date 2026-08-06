@@ -1,18 +1,32 @@
 {% extends "base.html" %}
 
+{% load static %}
+
 {% block title %}デバイス管理{% endblock %}
+
+{% block css %}
+<link
+    rel="stylesheet"
+    href="{% static 'css/list.css' %}"
+>
+{% endblock %}
 
 {% block content %}
 
-<h1>デバイス管理</h1>
+<div class="list-header">
 
-<!-- デバイス登録画面遷移ボタン -->
-<a href="{% url 'device_create' %}" class="button">
-    + デバイスを登録
-</a>
+    <h1>デバイス管理</h1>
+    
+    <!-- デバイス登録画面遷移ボタン -->
+    <a href="{% url 'device_create' %}" class="button">
+        + デバイスを登録
+    </a>
+
+</div>
+
 
 <!-- デバイス一覧表 -->
-<table>
+<table class="list-table">
     <thead>
         <tr>
             <th>デバイス名</th>
@@ -47,40 +61,44 @@
 
                 <td>
 
-                    <!-- 詳細ボタン -->
-                    <a
-                        href="{% url 'device_detail' device.id %}"
-                        class="button button-detail"
-                    >
-                        詳細
-                    </a>
+                    <div class="action-buttons">
 
-                    <!-- 編集ボタン -->
-                    <a
-                        href="{% url 'device_edit' device.id %}"
-                        class="button button-edit"
-                    >
-                        編集
-                    </a>
-
-                    <!-- 削除ボタン -->
-                    <form
-                        action="{% url 'device_delete' device.id %}"
-                        method="post"
-                        onsubmit="return confirm('「{{ device.device_name }}」を削除しますか？');"
-                        class="inline-form"
-                    >
-
-                        {% csrf_token %}
-
-                        <button
-                            type="submit"
-                            class="button button-delete"
+                        <!-- 詳細ボタン -->
+                        <a
+                            href="{% url 'device_detail' device.id %}"
+                            class="button button-detail"
                         >
-                            削除
-                        </button>
-
-                    </form>
+                            詳細
+                        </a>
+    
+                        <!-- 編集ボタン -->
+                        <a
+                            href="{% url 'device_edit' device.id %}"
+                            class="button button-edit"
+                        >
+                            編集
+                        </a>
+    
+                        <!-- 削除ボタン -->
+                        <form
+                            action="{% url 'device_delete' device.id %}"
+                            method="post"
+                            onsubmit="return confirm('「{{ device.device_name }}」を削除しますか？');"
+                            class="inline-form"
+                        >
+    
+                            {% csrf_token %}
+    
+                            <button
+                                type="submit"
+                                class="button button-delete"
+                            >
+                                削除
+                            </button>
+    
+                        </form>
+                        
+                    </div>
 
                 </td>
 
