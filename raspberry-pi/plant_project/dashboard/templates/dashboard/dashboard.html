@@ -38,7 +38,7 @@ const humidityData =
 const moistureData =
     JSON.parse(document.getElementById("moisture-data").textContent);
 
-const UPDATE_INTERVAL = {{ interval }} * 1000;
+const UPDATE_INTERVAL = Number("{{ interval|escapejs }}") * 1000;
 
 </script>
 
