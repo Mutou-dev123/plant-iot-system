@@ -47,19 +47,21 @@
 
 リアルタイムで温度・湿度・土壌水分を可視化し、植物の環境状態を確認できます。
 
-![メイン画面](images/alpha/dashboard-main.png)
+![メイン画面](/docs/alpha/v1/screenshots/dashboard-main.png)
 
 #### 管理＆設定サイドバー
 
 センサーの生データ表示や計測間隔の変更など、開発・検証用の機能を備えています。
 
-![サイドバー表示](images/alpha/dashboard-admin.png)
+![サイドバー表示](/docs/alpha/v1/screenshots/dashboard-admin.png)
+
+
 
 ### 🔌 ハードウェア構成
 
 Raspberry Pi 5、温湿度センサー、土壌水分センサー、ADCを接続し、実際にデータを取得・可視化しています。
 
-![ハードウェア全体像](images/alpha/hardware-overview.jpg)
+![ハードウェア全体像](/docs/images/alpha/hardware-overview.jpg)
 
 
 ***
