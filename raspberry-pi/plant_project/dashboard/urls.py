@@ -2,6 +2,7 @@ from django.urls import path
 
 from .views import dashboard
 from .views import plants
+from .views import devices
 from .views import api
 
 urlpatterns = [
@@ -59,11 +60,40 @@ urlpatterns = [
     # デバイス管理
     # ==========================================
     
-    #path(
-    #    "devices/",
-    #    devices.index,
-    #    name="devices",
-    #),
+    # 一覧
+    path(
+        "devices/",
+        devices.device_list,
+        name="device_list",
+    ),
+
+    # 作成
+    path(
+        "devices/create",
+        devices.device_create,
+        name="device_create",
+    ),
+
+    # 詳細
+    path(
+        "devices/<int:device_id>/",
+        devices.device_detail,
+        name="device_detail",
+    ),
+
+    # 編集
+    path(
+        "devices/<int:device_id>/edit/",
+        devices.device_edit,
+        name="device_edit",
+    ),
+
+    # 削除
+    path(
+        "devices/<int:device_id>/delete/",
+        devices.device_delete,
+        name="device_delete",
+    ),
 
     # ==========================================
     # API

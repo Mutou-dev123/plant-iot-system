@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+
+{% block title %}
+    {{ title }}
+{% endblock %}
+
+{% block content %}
+
+<h1>{{ title }}</h1>
+
+<form class="form" method="post">
+
+    {% csrf_token %}
+
+    <div class="form-group">
+
+        <label for="{{ form.plant.id_for_label }}">
+            {{ form.plant.label }}
+        </label>
+
+        {{ form.plant }}
+
+        {{ form.plant.errors }}
+
+    </div>
+
+    <div class="form-group">
+
+        <label for="{{ form.device_name.id_for_label }}">
+            {{ form.device_name.label }}
+        </label>
+
+        {{ form.device_name }}
+
+        {{ form.device_name.errors }}
+
+    </div>
+
+    <div class="form-group">
+
+        <label for="{{ form.wifi_ssid.id_for_label }}">
+            {{ form.wifi_ssid.label }}
+        </label>
+
+        {{ form.wifi_ssid }}
+
+        {{ form.wifi_ssid.errors }}
+
+    </div>
+
+    <div class="form-group">
+
+        <label for="{{ form.interval_seconds.id_for_label }}">
+            {{ form.interval_seconds.label }}
+        </label>
+
+        {{ form.interval_seconds }}
+
+        {{ form.interval_seconds.errors }}
+
+    </div>
+
+    <button class="button-primary" type="submit">
+        {{ button }}
+    </button>
+
+</form>
+
+{% endblock %}
