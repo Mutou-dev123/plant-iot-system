@@ -19,6 +19,90 @@
     更新間隔：{{ interval }}秒
 </p>
 
+<!-- ==========================
+    環境アラート
+========================== -->
+
+<section
+    class="alert-container"
+    aria-labelledby="alert-title"
+    aria-live="polite"
+>
+    <h2 id="alert-title" class="alert-title">
+        環境アラート
+    </h2>
+
+    {% if not latest %}
+        <div class="alert-message alert-info">
+            <strong>データ未取得</strong>
+            <p>センサーデータがまだ登録されていません。</p>
+        </div>
+
+    {% elif not plant_master %}
+        <div class="alert-message alert-info">
+            <strong>植物情報未設定</strong>
+            <p>
+                計測データに対応する植物マスタが登録されていないため、
+                環境アラートを判定できません。
+            </p>
+        </div>
+
+    {% elif has_alerts %}
+        <div class="alert-message alert-warning">
+            <strong>環境に注意が必要です</strong>
+
+            <ul class="alert-list">
+                {% for alert in alerts %}
+                    <li>{{ alert.message }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+
+    {% else %}
+        <div class="alert-message alert-success">
+            <strong>設定済みの環境項目に警告はありません</strong>
+            <p>
+                ただし、未計測やしきい値未設定の項目は
+                正常であることを確認できていません。
+            </p>
+        </div>
+    {% endif %}
+
+    {% if environment_statuses %}
+        <div class="environment-status-list">
+            {% for item in environment_statuses %}
+                <div class="environment-status status-{{ item.status }}">
+                    <div class="environment-status-heading">
+                        <strong>{{ item.label }}</strong>
+
+                        {% if item.status == "warning" %}
+                            <span class="status-label">要注意</span>
+                        {% elif item.status == "normal" %}
+                            <span class="status-label">正常</span>
+                        {% elif item.status == "unmeasured" %}
+                            <span class="status-label">未計測</span>
+                        {% else %}
+                            <span class="status-label">判定対象外</span>
+                        {% endif %}
+                    </div>
+
+                    <p class="environment-value">
+                        {{ item.value_display }}
+                    </p>
+
+                    <p class="environment-description">
+                        {{ item.message }}
+                    </p>
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+</section>
+
+<!-- ==========================
+    環境データグラフ
+==========================-->
+
 <div class="chart-container">
 
     <h2 class="chart-title">
