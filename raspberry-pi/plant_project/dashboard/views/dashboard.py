@@ -17,9 +17,6 @@ def index(request):
     )
     history_logs.reverse()
 
-    for log in history_logs:
-        print(log.measured_at)
-
     if latest_log:
         interval_seconds = latest_log.device.interval_seconds
     else:
@@ -34,15 +31,27 @@ def index(request):
         for log in history_logs
     ]
 
-    temp_data = [
-        log.temperature
-        for log in history_logs
-    ]
+    temp_data = []
 
-    humidity_data = [
-        log.humidity
-        for log in history_logs
-    ]
+    last_temp = None
+
+    for log in history_logs:
+
+        if log.temperature is not None:
+            last_temp = log.temperature
+
+        temp_data.append(last_temp)
+
+    humidity_data = []
+
+    last_humidity = None
+
+    for log in history_logs:
+
+        if log.humidity is not None:
+            last_humidity = log.humidity
+
+        humidity_data.append(last_humidity)
 
     moisture_data = [
         log.moisture

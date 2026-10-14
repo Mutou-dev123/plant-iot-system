@@ -16,6 +16,7 @@ if (canvas && typeof timeLabels !== "undefined") {
                 {
                     label: "土壌水分（％）",
                     data: moistureData,
+                    yAxisID: "y",
                     borderColor: "#0dcaf0",
                     backgroundColor: "rgba(13, 202, 240, 0.1)",
                     borderWidth: 3,
@@ -26,6 +27,7 @@ if (canvas && typeof timeLabels !== "undefined") {
                 {
                     label: "🌡️ 温度 (℃)",
                     data: tempData,
+                    yAxisID: "y1",
                     borderColor: "#dc3545",
                     backgroundColor: "rgba(220, 53, 69, 0.1)",
                     borderWidth: 3,
@@ -36,6 +38,7 @@ if (canvas && typeof timeLabels !== "undefined") {
                 {
                     label: "💨 湿度 (%)",
                     data: humidityData,
+                    yAxisID: "y",
                     borderColor: "#198754",
                     backgroundColor: "rgba(25, 135, 84, 0.1)",
                     borderWidth: 3,
@@ -67,13 +70,26 @@ if (canvas && typeof timeLabels !== "undefined") {
                     ticks: { color: "#666666" }
                 },
                 y: {
+                    position: "left",
+                    min: 0,
+                    max: 100,
                     grid: { color: "#dddddd" },
                     ticks: {
                         color: "#666666",
-                        stepSize: 20
-                    },
-                    min: 0,
-                    max: 100
+                        stepSize: 20,
+                        callback: (value) => value + "%"
+                    }
+                },
+                y1: {
+                    position: "right",
+                    min: -20,
+                    max: 50,
+                    grid: { drawOnChartArea: false },
+                    ticks: {
+                        color: "#666666",
+                        stepSize: 10,
+                        callback: (value) => value + "℃"
+                    }
                 }
             }
         }

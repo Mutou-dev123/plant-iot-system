@@ -13,8 +13,8 @@ class ConversionService:
     # 【土壌水分を％に変換】
 
     # キャリブレーション値
-    DRY_VALUE = 3500    # 乾燥時
-    WET_VALUE = 1500    # 湿潤時
+    DRY_VALUE = 2550    # 乾燥時
+    WET_VALUE = 500    # 湿潤時
 
     @staticmethod
     def calculate_moisture(raw):
