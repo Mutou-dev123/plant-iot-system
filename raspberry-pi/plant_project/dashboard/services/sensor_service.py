@@ -74,6 +74,10 @@ class SensorService:
             humidity=data["humidity"]
         )
 
+        # 最終通信日時を更新
+        device.last_seen_at = received_at
+        device.save(update_fields=["last_seen_at"])
+
         return {
             "status": "success",
             "next_interval": device.interval_seconds
