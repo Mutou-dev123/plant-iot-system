@@ -2,7 +2,8 @@ from django.db import models
 from django.utils import timezone
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.core.exceptions import ValidationError
-
+from datetime import timedelta
+from django.utils import timezone
 
 # ==============================
 # 1. 植物マスタ (PlantMaster)
@@ -231,10 +232,38 @@ class Device(models.Model):
         verbose_name="計測間隔（秒）"
     )
 
+    # 【最終通信日時】
+    last_seen_at = models.DateTimeField(
+        null=True,
+        blank=True,
+        verbose_name="最終通信日時"
+    )
+
     class Meta:
         db_table = "device"
         verbose_name = "デバイス"
         verbose_name_plural = "デバイス"
+
+    # 【通信状況】
+    @property
+    def communication_status(self):
+        
+        """ 最終通信日時と計測間隔から通信状態を判定する """
+
+        # 一度も通信していない
+        if self.last_seen_at is None:
+            return "未通信"
+
+        # 判定時間：計測間隔の3倍
+        timeout_seconds = max(self.interval_seconds * 3, 60)
+
+        # 最終通信からの経過時間
+        elapsed = (timezone.now() - self.last_seen_at).total_seconds()
+
+        if elapsed <= timeout_seconds:
+            return "通信確認済み"
+
+        return "通信未確認"
 
     def __str__(self):
         return self.device_name
