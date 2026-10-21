@@ -9,7 +9,7 @@
 #include <Arduino.h>
 
 // ==========================
-// DHT11
+// DHT
 // ==========================
 constexpr uint8_t DHT_PIN = 4;
 
