@@ -1,2 +1,8 @@
 sensor_data.db
 sensor_data.csv
+
+venv/
+.venv/
+
+alpha_v1sample.py
+sample_sensor_data.csv

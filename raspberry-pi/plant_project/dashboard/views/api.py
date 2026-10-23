@@ -2,6 +2,13 @@
 # APIビュー
 # ==========================================
 
+# APIリクエストの受付とレスポンスの返却を管理する
+#
+# ・HTTPメソッドの確認
+# ・サービス層の呼び出し
+# ・JSONレスポンスの返却
+# ・HTTPステータスコードの設定
+
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.utils import timezone
@@ -10,7 +17,11 @@ from dashboard.services.sensor_service import SensorService
 
 from dashboard.models import SensorLog
 
-# データ受取
+# ==========================================
+# センサーデータ受信API
+# ==========================================
+# ESP32からセンサーデータを受信し、
+# SensorServiceへ処理を委譲する
 @csrf_exempt
 def receive_data(request):
 
@@ -36,7 +47,11 @@ def receive_data(request):
             status=400
         )
 
-# グラフデータ
+# ==========================================
+# グラフデータ取得API
+# ==========================================
+# センサーログを取得し、
+# グラフ表示用のJSONデータを返却する
 def chart_data(request):
 
     logs = list(

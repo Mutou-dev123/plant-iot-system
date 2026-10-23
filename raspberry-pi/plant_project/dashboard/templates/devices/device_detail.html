@@ -1,3 +1,5 @@
+<!-- デバイス詳細画面 テンプレート -->
+
 {% extends "base.html" %}
 
 {% load static %}
@@ -17,6 +19,7 @@
 
 <div class="detail-container">
 
+    <!-- デバイス名（見出し） -->
     <h1 class="detail-title">
         {{ device.device_name }}
     </h1>
@@ -25,16 +28,19 @@
     
         <table class="detail-table">
         
+            <!-- デバイス名 -->
             <tr>
                 <th>デバイス名</th>
                 <td>{{ device.device_name }}</td>
             </tr>
-        
+            
+            <!-- デバイスUUID -->
             <tr>
                 <th>デバイスUUID</th>
                 <td>{{ device.device_uuid }}</td>
             </tr>
         
+            <!-- 観測対象の植物 -->
             <tr>
                 <th>観測対象の植物</th>
                 <td>
@@ -46,6 +52,7 @@
                 </td>
             </tr>
         
+            <!-- Wi-Fi SSID -->
             <tr>
                 <th>Wi-Fi SSID</th>
                 <td>
@@ -57,22 +64,31 @@
                 </td>
             </tr>
         
+            <!-- 計測間隔 -->
             <tr>
                 <th>計測間隔</th>
                 <td>{{ device.interval_seconds }} 秒</td>
             </tr>
-        
+
+            <!-- 通信状態 -->
+            <tr>
+                <th>通信状態</th>
+                <td>{{ device.communication_status }}</td>
+            </tr>
+
+            <!-- 最終通信日時 -->
             <tr>
                 <th>最終通信日時</th>
                 <td>
-                    {% if latest_log %}
-                        {{ latest_log.received_at|date:"Y/m/d H:i:s" }}
+                    {% if device.last_seen_at %}
+                        {{ device.last_seen_at|date:"Y/m/d H:i:s" }}
                     {% else %}
                         通信履歴なし
                     {% endif %}
                 </td>
             </tr>
         
+            <!-- 累計測定回数 -->
             <tr>
                 <th>累計計測回数</th>
                 <td>{{ log_count }}</td>
@@ -80,8 +96,10 @@
         
         </table>
         
+        <!-- 操作ボタン群 -->
         <div class="action-buttons">
         
+            <!-- 編集ボタン -->
             <a
                 href="{% url 'device_edit' device.id %}"
                 class="button button-edit"
@@ -89,6 +107,7 @@
                 編集
             </a>
         
+            <!-- 削除ボタン -->
             <form
                 action="{% url 'device_delete' device.id %}"
                 method="post"

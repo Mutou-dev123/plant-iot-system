@@ -1,1 +1,1 @@
-📂 **docs > alpha > v2 > architecture.md**
+> 📂 **docs > alpha > v2 > architecture.md**

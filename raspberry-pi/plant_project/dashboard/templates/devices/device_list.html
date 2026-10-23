@@ -1,3 +1,5 @@
+<!-- デバイス一覧画面 テンプレート -->
+
 {% extends "base.html" %}
 
 {% load static %}
@@ -33,6 +35,8 @@
             <th>観測対象</th>
             <th>Wi-Fi</th>
             <th>計測間隔</th>
+            <th>通信状態</th>
+            <th>最終通信日時</th>
             <th>操作</th>
         </tr>
     </thead>
@@ -42,11 +46,15 @@
         <!-- 登録済みがあるかどうか -->
         {% for device in devices %}
             <tr>
+
+                <!-- デバイス名 -->
                 <td>
                     <a href="{% url 'device_detail' device.id %}">
                         {{ device.device_name }}
                     </a>
                 </td>
+
+                <!-- 観測対象 -->
                 <td>
                     {% if device.plant %}
                         {{ device.plant.custom_name }}
@@ -55,10 +63,25 @@
                     {% endif %}
                 </td>
 
+                <!-- Wi-Fi SSID -->
                 <td>{{ device.wifi_ssid|default:"-" }}</td>
-
+                
+                <!-- 計測間隔 -->
                 <td>{{ device.interval_seconds }} 秒</td>
 
+                <!-- 通信状態 -->
+                <td>{{ device.communication_status }}</td>
+
+                <!-- 最終通信日時 -->
+                <td>
+                    {% if device.last_seen_at %}
+                        {{ device.last_seen_at|date:"Y/m/d H:i:s" }}
+                    {% else %}
+                        通信履歴なし
+                    {% endif %}
+                </td>
+
+                <!-- 操作ボタン群 -->
                 <td>
 
                     <div class="action-buttons">
