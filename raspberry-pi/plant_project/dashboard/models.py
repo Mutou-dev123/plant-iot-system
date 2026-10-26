@@ -4,6 +4,7 @@ from django.core.validators import MinValueValidator, MaxValueValidator
 from django.core.exceptions import ValidationError
 from datetime import timedelta
 from django.utils import timezone
+import uuid
 
 # ==============================
 # 1. 植物マスタ (PlantMaster)
@@ -205,18 +206,40 @@ class Device(models.Model):
     # ※ related_nameをつけると、
     #    plant.device_set.all()をplant.devices.all()のように書ける。
 
-    # 【ESPの識別名】
+    # 【ESP32の識別名】
     device_name = models.CharField(
         max_length=50,
         unique=True,
         verbose_name="デバイス名"
     )
 
-    # 【ESPの一意な識別ID】
+    # 【ESP32の一意な識別ID】
     device_uuid = models.CharField(
         max_length=100,
         unique=True,
+        default=uuid.uuid4,
         verbose_name="デバイスUUID"
+    )
+
+    # 【ESP32の物理識別子】
+    mac_address = models.CharField(
+        max_length=17,
+        unique=True,
+        null=True,
+        blank=True,
+        verbose_name="MACアドレス"
+    )
+
+    # 【最後にESP32から受信した情報】
+    ip_address = models.GenericIPAddressField(
+        null=True,
+        blank=True,
+        verbose_name="IPアドレス"
+    )
+    firmware_version = models.CharField(
+        max_length=50,
+        blank=True,
+        verbose_name="ファームウェアバージョン"
     )
 
     # 【SSID】
@@ -231,6 +254,12 @@ class Device(models.Model):
         default=300,
         verbose_name="計測間隔（秒）"
     )
+
+    # ESP32が報告したセンサー状態
+    # nullは「未報告」を表す
+    reported_dht_enabled = models.BooleanField(null=True, blank=True)
+    reported_soil_enabled = models.BooleanField(null=True, blank=True)
+    reported_light_enabled = models.BooleanField(null=True, blank=True)
 
     # 【最終通信日時】
     last_seen_at = models.DateTimeField(
