@@ -6,3 +6,5 @@ venv/
 
 alpha_v1sample.py
 sample_sensor_data.csv
+
+staticfiles/
