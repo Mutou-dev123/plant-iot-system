@@ -8,15 +8,19 @@
 #include <Arduino.h>
 #include <time.h>
 
+
 //==================================================
 // システム異常表示
 //==================================================
+
 void printSystemAlert(
+    const SensorData& data,
     bool isDhtError,
     bool isSoilError,
     bool isLightError
 )
 {
+    // 有効なセンサーに異常がなければ表示しない
     if (!(isDhtError || isSoilError || isLightError))
     {
         return;
@@ -27,29 +31,33 @@ void printSystemAlert(
 
     if (isDhtError)
     {
-        Serial.println("[DHT11] Sensor read failed.");
+        Serial.println("[DHT] Sensor read failed.");
     }
 
     if (isSoilError)
     {
-        Serial.println("[Soil] Invalid raw value.");
+        Serial.println("[Soil] Abnormal raw value.");
     }
 
     if (isLightError)
     {
-        Serial.println("[Light] Invalid raw value.");
+        Serial.println("[Light] Abnormal raw value.");
     }
 
     Serial.println("==================================");
     Serial.println();
 }
 
+
 //==================================================
-// NTP時刻表示
+// 時刻表示
 //==================================================
+
 void printTimeLog(time_t timestamp)
 {
     struct tm timeinfo;
+
+    Serial.println("========== TIME ==========");
 
     if (localtime_r(&timestamp, &timeinfo))
     {
@@ -62,22 +70,22 @@ void printTimeLog(time_t timestamp)
             &timeinfo
         );
 
-        Serial.println("========== TIME ==========");
         Serial.print("Measured At : ");
         Serial.println(buffer);
     }
     else
     {
-        Serial.println("========== TIME ==========");
         Serial.println("Measured At : Invalid");
     }
 
     Serial.println();
 }
 
+
 //==================================================
 // センサーデータ表示
 //==================================================
+
 void printSensorLog(
     const SensorData& data,
     bool isDhtError,
@@ -87,45 +95,79 @@ void printSensorLog(
 {
     Serial.println("======= SENSOR DATA =======");
 
-    // 温度
-    if (isDhtError)
+    // 温湿度
+    if (!data.dhtEnabled)
     {
-        Serial.println("Temperature : ERROR");
-        Serial.println("Humidity    : ERROR");
+        Serial.println("Temperature : DISABLED");
+        Serial.println("Humidity    : DISABLED");
+    }
+    else if (isDhtError)
+    {
+        Serial.println("Temperature : DISABLED");
+        Serial.println("Humidity    : DISABLED");
     }
     else
     {
-        Serial.printf("Temperature : %.1f C\n", data.temperature);
-        Serial.printf("Humidity    : %.1f %%\n", data.humidity);
+        Serial.printf(
+            "Temperature : %.1f C\n",
+            data.temperature
+        );
+
+        Serial.printf(
+            "Humidity   : %.1f %%\n",
+            data.humidity
+        );
     }
 
-    // 土壌水分
-    if (isSoilError)
+    //土壌水分
+    if (!data.soilEnabled)
     {
-        Serial.printf("Soil Raw    : %d [ERROR]\n", data.soilRaw);
+        Serial.println("Soil Raw    : DISABLED");
+    }
+    else if (isSoilError)
+    {
+        Serial.printf(
+            "Soil Raw   : %d [ERROR]\n",
+            data.soilRaw
+        );
     }
     else
     {
-        Serial.printf("Soil Raw    : %d\n", data.soilRaw);
+        Serial.printf(
+            "Soil Raw   : %d\n",
+            data.soilRaw
+        );
     }
 
     // 光量
-    if (isLightError)
+    if (!data.lightEnabled)
     {
-        Serial.printf("Light Raw   : %d [ERROR]\n", data.lightRaw);
+        Serial.println("Light Raw   : DISABLED");
+    }
+    else if (isLightError)
+    {
+        Serial.printf(
+            "Light Raw  : %d [ERROR]\n",
+            data.lightRaw
+        );
     }
     else
     {
-        Serial.printf("Light Raw   : %d\n", data.lightRaw);
+        Serial.printf(
+            "Light Raw  : %d\n",
+            data.lightRaw
+        );
     }
 
     Serial.println("===========================");
     Serial.println();
 }
 
+
 //==================================================
 // HTTP通信ログ
 //==================================================
+
 void printNetworkLog(
     int httpCode,
     int nextInterval

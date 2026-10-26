@@ -1,27 +1,27 @@
+//==================================================
 // メイン処理（システム全体の制御）
+//==================================================
 
 #include <Arduino.h>
 
+#include "config/config.h"
 #include "models/sensor_data.h"
-
 #include "sensors/dht_sensor.h"
 #include "sensors/soil_sensor.h"
 #include "sensors/light_sensor.h"
-
-#include "utils/logger.h"           // ログ表示の読込
-#include "utils/led_indicator.h"    // LEDインジケーターの読込
+#include "utils/logger.h"
+#include "utils/led_indicator.h"
 #include "utils/time_manager.h"
-
 #include "network/wifi-manager.h"
 #include "network/api_client.h"
 
 // タイマー管理用の変数
 unsigned long lastReadTime = 0;			// 最後にセンサーを読み取った時間
 
-// Djangoからの指示で変動。初期値を5分（300,000ms）に設定
+// 計測間隔
 unsigned long currentInterval = 5000;	// センサー取得間隔
 
-// 各センサーのエラー状態記憶フラグ
+// センサーエラーフラグ
 bool isDhtError = false;
 bool isSoilError = false;
 bool isLightError = false;
@@ -37,9 +37,21 @@ void setup()
 
     // 各モジュールの初期化
     initLEDs();
-    initDHT();
-    initSoilSensor();
-    initLightSensor();
+
+    // 有効なセンサーだけ初期化する
+    if (SENSOR_DHT_ENABLED)
+    {
+        initDHT();
+    }
+
+    if (SENSOR_SOIL_ENABLED)
+    {
+        initSoilSensor();
+    }
+
+    if (SENSOR_LIGHT_ENABLED) {
+        initLightSensor();
+    }
 
     // ここでWi-Fi接続処理が入る
     connectWiFi();
@@ -62,24 +74,50 @@ void loop()
     {
         lastReadTime = currentMillis; // 読み取り時間を更新
 
+        // センサーデータを初期化
         SensorData data;
+
         data.timestamp = getCurrentTimestamp();
 
-        readDHT(data);
-        readSoil(data);
-        readLight(data);
+        // 有効設定を反映
+        data.dhtEnabled = SENSOR_DHT_ENABLED;
+        data.soilEnabled = SENSOR_SOIL_ENABLED;
+        data.lightEnabled = SENSOR_LIGHT_ENABLED;
 
-        // センサーエラー判定
-        isDhtError = !data.dhtValid; 
-        isSoilError = !data.soilValid;
-        isLightError = !data.lightValid;
-        
-        //==============================
+        // 計測結果の初期値
+        data.temperature = NAN;
+        data.humidity = NAN;
+        data.soilRaw = -1;
+        data.lightRaw = -1;
+
+        data.dhtValid = false;
+        data.soilValid = false;
+        data.lightValid = false;
+
+        // 有効なセンサーだけ計測
+        if (data.dhtEnabled)
+        {
+            readDHT(data);
+        }
+
+        if (data.soilEnabled)
+        {
+            readSoil(data);
+        }
+
+        if (data.lightEnabled)
+        {
+            readLight(data);
+        }
+
+        // 無効なセンサーはエラーにしない
+        isDhtError = data.dhtEnabled && !data.dhtValid;
+        isSoilError = data.soilEnabled && !data.soilValid;
+        isLightError = data.lightEnabled && !data.lightValid;
+
         // ログ表示
-        //==============================
-
-        // システム異常
         printSystemAlert(
+            data,
             isDhtError,
             isSoilError,
             isLightError
