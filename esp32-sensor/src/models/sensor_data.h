@@ -26,12 +26,20 @@ struct SensorData
     int lightRaw;  // 光量センサー生データ(ADC値)
 
     //========================
-    // センサーデータ成功判定
+    // センサー有効設定
     //========================
 
-    bool dhtValid;      // 温湿度
-    bool soilValid;     // 土壌水分
-    bool lightValid;    // 光量
+    bool dhtEnabled;    // 温湿度センサーの計測有効状態
+    bool soilEnabled;   // 土壌水分センサーの計測有効状態
+    bool lightEnabled;  // 光量センサーの計測有効状態
+
+    //========================
+    // 計測結果の有効性
+    //========================
+
+    bool dhtValid;      // 温湿度データが有効か
+    bool soilValid;     // 土壌水分データが有効か
+    bool lightValid;    // 光量データが有効か
 };
 
 #endif

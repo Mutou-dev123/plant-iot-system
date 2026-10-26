@@ -10,6 +10,7 @@
 
 // システム異常表示
 void printSystemAlert(
+    const SensorData& data,
     bool isDhtError,
     bool isSoilError,
     bool isLightError

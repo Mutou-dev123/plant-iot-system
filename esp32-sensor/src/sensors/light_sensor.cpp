@@ -28,5 +28,5 @@ void readLight(SensorData &data)
     data.lightRaw = analogRead(LIGHT_PIN);
 
     // データ取得成功判定
-    data.lightValid = !(data.lightRaw <= 0 || data.soilRaw >= 4095);
+    data.lightValid = !(data.lightRaw <= 0 || data.lightRaw >= 4095);
 }

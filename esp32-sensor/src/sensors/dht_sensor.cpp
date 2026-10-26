@@ -16,7 +16,7 @@
 
 constexpr uint8_t DHT_TYPE = DHT22;
 
-// DHT11を扱うためのオブジェクトを作成
+// DHTを扱うためのオブジェクトを作成
 DHT dht(DHT_PIN, DHT_TYPE);
 
 //==============================

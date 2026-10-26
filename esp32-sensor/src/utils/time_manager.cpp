@@ -20,6 +20,7 @@ constexpr int DAYLIGHT_OFFSET_SEC = 0;
 // 前回同期した日
 static int lastSyncDay = -1;
 
+
 //==============================
 // NTP初期化
 //==============================
@@ -29,6 +30,7 @@ void initTime()
     syncTime();
 }
 
+
 //==============================
 // NTP同期
 //==============================
@@ -37,8 +39,11 @@ void syncTime()
 {
     if (WiFi.status() != WL_CONNECTED)
     {
+        Serial.println("[TIME] Wi-Fi is not connected.");
         return;
     }
+
+    Serial.println("[TIME] Starting NTP synchronization...");
 
     configTime(
         GMT_OFFSET_SEC,
@@ -48,13 +53,29 @@ void syncTime()
 
     struct tm timeInfo;
 
-    while (!getLocalTime(&timeInfo))
+    // 最大15秒間、NTP同期を待つ
+    for (int i = 0; i < 30; i++)
     {
-        delay(500);
+        if (getLocalTime(&timeInfo, 500))
+        {
+            lastSyncDay = timeInfo.tm_mday;
+
+            Serial.println("[TIME] NTP synchronization successful.");
+            Serial.println("[TIME] Unix timestamp: ");
+            Serial.println((long long)time(nullptr));
+
+            Serial.print("[TIME] Local time: ");
+            Serial.println(&timeInfo, "%Y-%m-%d %H:%M:%S");
+
+            return;
+        }
     }
 
-    lastSyncDay = timeInfo.tm_mday;
+    Serial.println("[TIME] NTP synchronization failed.");
+    Serial.print("[TIME] Current timestamp: ");
+    Serial.println((long long)time(nullptr));
 }
+
 
 //==============================
 // 現在時刻取得
@@ -64,6 +85,7 @@ time_t getCurrentTimestamp()
 {
     return time(nullptr);
 }
+
 
 //==============================
 // 日付変更時の再同期

@@ -12,8 +12,8 @@
  * @brief センサーデータをJSON形式に変換し、HTTP POSTで送信する
  *
  * @param data センサーデータ
- * @return true 送信成功
- * @return false 送信失敗
+ * @return 0より大きい値 次回の計測間隔（秒）
+ * @return -1 送信失敗
  */
 int sendSensorData(const SensorData& data);
 
