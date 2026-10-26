@@ -13,15 +13,43 @@ from dashboard.models import Device
 class DeviceService:
 
     @staticmethod
-    def get_or_create(device_name):
+    def get_or_create(data):
+        mac_address = data["macAddress"].strip().upper()
+
+        # 名前が同じESP32を区別できるよう、MACアドレスを名前に付ける
+        mac_without_colons = mac_address.replace(":", "")
+        name_prefix = data["deviceName"].strip()[:37]
+        unique_device_name = f"{name_prefix}-{mac_without_colons}"
 
         device, created = Device.objects.get_or_create(
-            device_name=device_name,
-
-            # デフォルトのデータ取得間隔を300秒に設定
+            mac_address=mac_address,
             defaults={
-                "interval_seconds": 300
-            }
+                "device_name": unique_device_name,
+                "ip_address": data["ipAddress"],
+                "firmware_version": data["firmwareVersion"],
+                "reported_dht_enabled": data["dhtEnabled"],
+                "reported_soil_enabled": data["soilEnabled"],
+                "reported_light_enabled": data["lightEnabled"],
+                "interval_seconds": 300,
+            },
         )
+
+        # デバイスの情報が存在しない場合
+        if not created:
+            device.ip_address = data["ipAddress"]
+            device.firmware_version = data["firmwareVersion"]
+            device.reported_dht_enabled = data["dhtEnabled"]
+            device.reported_soil_enabled = data["soilEnabled"]
+            device.reported_light_enabled = data["lightEnabled"]
+
+            device.save(
+                update_fields=[
+                    "ip_address",
+                    "firmware_version",
+                    "reported_dht_enabled",
+                    "reported_soil_enabled",
+                    "reported_light_enabled",
+                ]
+            )
 
         return device

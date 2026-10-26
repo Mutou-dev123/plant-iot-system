@@ -38,9 +38,7 @@ class SensorService:
         ValidatorService.validate(data)
 
         # Device取得
-        device = DeviceService.get_or_create(
-            data["deviceName"]
-        )
+        device = DeviceService.get_or_create(data)
 
         # 日時変換
         measured_at = datetime.fromtimestamp(
@@ -82,21 +80,18 @@ class SensorService:
         # ==========================================
 
         # 土壌水分（％）に変換
-        if soil_raw is not None:
-            moisture = ConversionService.calculate_moisture(
-                soil_raw
-            )
-        else:
-            moisture = None
+        moisture = (
+            None
+            if data["soilRaw"] is None
+            else ConversionService.calculate_moisture(data["soilRaw"])
+        )
 
         # 光量スコアに変換
-        if light_raw is not None:
-            light = ConversionService.calculate_light_score(
-                light_raw
-            )
-        else:
-            light = None
-        
+        light = (
+            None
+            if data["lightRaw"] is None
+            else ConversionService.calculate_light_score(data["lightRaw"])
+        )
 
         # ==========================================
         # DB保存
