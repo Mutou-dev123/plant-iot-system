@@ -55,3 +55,164 @@
     height: 420px;
 
 }
+
+
+/* ==============================
+   環境アラート
+============================== */
+
+.alert-container {
+    max-width: 1100px;
+    width: 100%;
+    box-sizing: border-box;
+    margin: 0 auto 25px;
+    padding: 20px;
+    background: #ffffff;
+    border-radius: 15px;
+    box-shadow: 0 3px 12px rgba(0, 0, 0, 0.08);
+}
+
+.alert-title {
+    margin: 0 0 18px;
+    color: #2f5d34;
+    font-size: 1.2rem;
+}
+
+.alert-message {
+    padding: 16px;
+    border-radius: 10px;
+    border: 1px solid transparent;
+}
+
+.alert-message > strong {
+    display: block;
+    margin-bottom: 8px;
+}
+
+.alert-message p {
+    margin: 6px 0 0;
+    line-height: 1.6;
+}
+
+.alert-warning {
+    color: #842029;
+    background: #fff0f0;
+    border-color: #f1b8bd;
+}
+
+.alert-success {
+    color: #245b36;
+    background: #edf8ef;
+    border-color: #b9dfc0;
+}
+
+.alert-info {
+    color: #344767;
+    background: #f0f5fb;
+    border-color: #cbd9eb;
+}
+
+.alert-list {
+    margin: 8px 0 0;
+    padding-left: 22px;
+}
+
+.alert-list li {
+    margin-top: 8px;
+    line-height: 1.6;
+}
+
+/* ==============================
+   環境項目別ステータス
+============================== */
+
+.environment-status-list {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 15px;
+    margin-top: 18px;
+}
+
+.environment-status {
+    min-width: 0;
+    padding: 16px;
+    border: 1px solid #e1e7e1;
+    border-radius: 10px;
+    background: #ffffff;
+}
+
+.environment-status-heading {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.environment-status-heading strong {
+    color: #2f5d34;
+}
+
+.status-label {
+    display: inline-block;
+    padding: 4px 9px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 600;
+}
+
+.status-warning {
+    background: #fff7f7;
+    border-color: #e8a4aa;
+}
+
+.status-warning .status-label {
+    color: #842029;
+    background: #f8d7da;
+}
+
+.status-normal .status-label {
+    color: #245b36;
+    background: #d9f0df;
+}
+
+.status-unmeasured .status-label,
+.status-unconfigured .status-label {
+    color: #555b63;
+    background: #eceff2;
+}
+
+.environment-value {
+    margin: 16px 0 8px;
+    color: #263b2a;
+    font-size: 1.7rem;
+    font-weight: 700;
+    overflow-wrap: anywhere;
+}
+
+.environment-description {
+    margin: 0;
+    color: #606860;
+    font-size: 0.9rem;
+    line-height: 1.6;
+}
+
+/* ==============================
+   レスポンシブ対応
+============================== */
+
+@media (max-width: 800px) {
+    .environment-status-list {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 520px) {
+    .alert-container {
+        padding: 15px;
+    }
+
+    .environment-status-list {
+        grid-template-columns: 1fr;
+    }
+}
