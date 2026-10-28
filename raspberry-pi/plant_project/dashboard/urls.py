@@ -109,5 +109,11 @@ urlpatterns = [
         "api/chart-data/",
         api.chart_data,
         name="api_chart_data",
+    ),
+
+    path(
+        "api/device_config/",
+        api.device_config,
+        name="api_device_config",
     )
 ]
