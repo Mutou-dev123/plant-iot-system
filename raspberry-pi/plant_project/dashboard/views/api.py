@@ -15,7 +15,10 @@ from django.utils import timezone
 
 from dashboard.services.sensor_service import SensorService
 
-from dashboard.models import SensorLog
+from dashboard.models import Device, SensorLog
+
+import re
+
 
 # ==========================================
 # センサーデータ受信API
@@ -46,6 +49,7 @@ def receive_data(request):
             },
             status=400
         )
+
 
 # ==========================================
 # グラフデータ取得API
@@ -79,3 +83,52 @@ def chart_data(request):
     }
 
     return JsonResponse(data)
+
+
+# ==========================================
+# デバイス設定取得API
+# ==========================================
+def device_config(request):
+
+    if request.method != "GET":
+        return JsonResponse(
+            {"status": "invalid_method"},
+            status=405
+        )
+
+    mac_address = request.GET.get("macAddress", "").strip().upper()
+
+    if not re.fullmatch(
+        r"(?:[0-9A-F]{2}:){5}[0-9A-F]{2}",
+        mac_address,
+    ):
+        return JsonResponse(
+            {
+                "status": "error",
+                "message": "A valid macAddress query parameter is required."
+            },
+            status=400
+        )
+
+    device = Device.objects.filter(mac_address=mac_address).first()
+
+    if device is None:
+        return JsonResponse(
+            {
+                "status": "error",
+                "message": "Device not found.",
+            },
+            status=404
+        )
+
+    return JsonResponse(
+        {
+            "config_version": device.config_version,
+            "interval_seconds": device.interval_seconds,
+            "sensors": {
+                "dht": device.desired_dht_enabled,
+                "soil": device.desired_soil_enabled,
+                "light": device.desired_light_enabled,
+            },
+        }
+    )

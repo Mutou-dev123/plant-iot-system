@@ -80,7 +80,35 @@
                 {{ form.interval_seconds.errors }}
 
             </div>
+            
+            <!-- 温湿度センサー（DHT）スイッチ -->
+            <div class="form-group">
+                <label for="{{ form.desired_dht_enabled.id_for_label }}">
+                    {{ form.desired_dht_enabled }}
+                    {{ form.desired_dht_enabled.label }}
+                </label>
+                {{ form.desired_dht_enabled.errors }}
+            </div>
 
+            <!-- 土壌水分センサースイッチ -->
+            <div class="form-group">
+                <label for="{{ form.desired_soil_enabled.id_for_label }}">
+                    {{ form.desired_soil_enabled }}
+                    {{ form.desired_soil_enabled.label }}
+                </label>
+                {{ form.desired_soil_enabled.errors }}
+            </div>
+
+            <!-- 光センサースイッチ -->
+            <div class="form-group">
+                <label for="{{ form.desired_light_enabled.id_for_label }}">
+                    {{ form.desired_light_enabled }}
+                    {{ form.desired_light_enabled.label }}
+                </label>
+                {{ form.desired_light_enabled.errors }}
+            </div>
+
+            <!-- フォーム送信ボタン -->
             <div class="form-actions">
 
                 <button

@@ -46,6 +46,9 @@ class DeviceForm(forms.ModelForm):
             "device_name",
             "wifi_ssid",
             "interval_seconds",
+            "desired_dht_enabled",
+            "desired_soil_enabled",
+            "desired_light_enabled",
         ]
 
         labels = {
@@ -53,6 +56,9 @@ class DeviceForm(forms.ModelForm):
             "device_name": "デバイス名",
             "wifi_ssid": "Wi-Fi SSID",
             "interval_seconds": "測定間隔（秒）",
+            "desired_dht_enabled": "温湿度センサー（DHT）を使用する",
+            "desired_soil_enabled": "土壌水分センサーを使用する",
+            "desired_light_enabled": "光センサーを使用する",
         }
 
         widgets = {
@@ -75,3 +81,24 @@ class DeviceForm(forms.ModelForm):
                 }
             ),
         }
+
+    # ラズパイ側で希望設定を保存する関数
+    def save(self, commit=True):
+        instance = super().save(commit=False)
+
+        config_fields = {
+            "interval_seconds",
+            "desired_dht_enabled",
+            "desired_soil_enabled",
+            "desired_light_enabled",
+        }
+
+        # 設定バージョンを更新
+        if instance.pk and config_fields.intersection(self.changed_data):
+            instance.config_version += 1
+
+        if commit:
+            instance.save()
+            self.save_m2m()
+        
+        return instance
