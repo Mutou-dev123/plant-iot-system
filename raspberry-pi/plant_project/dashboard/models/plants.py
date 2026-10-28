@@ -1,10 +1,7 @@
 from django.db import models
-from django.utils import timezone
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.core.exceptions import ValidationError
-from datetime import timedelta
 from django.utils import timezone
-import uuid
 
 # ==============================
 # 1. 植物マスタ (PlantMaster)
@@ -150,6 +147,7 @@ class PlantMaster(models.Model):
                     f"{label}の上限は下限以上にしてください。"
                 )
 
+
 # ==============================
 # 2. 育成植物 (Plant)
 # ==============================
@@ -158,7 +156,7 @@ class Plant(models.Model):
 
     # 【植物マスタ】
     plant_master = models.ForeignKey(
-        PlantMaster,
+        "dashboard.PlantMaster",
         on_delete=models.SET_NULL,
         null=True,
         blank=True,
@@ -185,193 +183,3 @@ class Plant(models.Model):
 
     def __str__(self):
         return self.custom_name
-    
-
-# ==============================
-# 3. デバイス設定 (Device)
-# ==============================
-# ESP32を一機ごとの設定を管理する。
-class Device(models.Model):
-
-    # 【接続先植物（未登録可）】
-    plant = models.ForeignKey(
-        Plant,
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=True,
-        related_name="devices",
-        verbose_name="観測対象の植物"
-    )
-
-    # ※ related_nameをつけると、
-    #    plant.device_set.all()をplant.devices.all()のように書ける。
-
-    # 【ESP32の識別名】
-    device_name = models.CharField(
-        max_length=50,
-        unique=True,
-        verbose_name="デバイス名"
-    )
-
-    # 【ESP32の一意な識別ID】
-    device_uuid = models.CharField(
-        max_length=100,
-        unique=True,
-        default=uuid.uuid4,
-        verbose_name="デバイスUUID"
-    )
-
-    # 【ESP32の物理識別子】
-    mac_address = models.CharField(
-        max_length=17,
-        unique=True,
-        null=True,
-        blank=True,
-        verbose_name="MACアドレス"
-    )
-
-    # 【最後にESP32から受信した情報】
-    ip_address = models.GenericIPAddressField(
-        null=True,
-        blank=True,
-        verbose_name="IPアドレス"
-    )
-    firmware_version = models.CharField(
-        max_length=50,
-        blank=True,
-        verbose_name="ファームウェアバージョン"
-    )
-
-    # 【SSID】
-    wifi_ssid = models.CharField(
-        max_length=100,
-        blank=True,
-        verbose_name="Wi-Fi SSID"
-    )
-
-    # 【計測間隔】
-    interval_seconds = models.PositiveIntegerField(
-        default=300,
-        verbose_name="計測間隔（秒）"
-    )
-
-    # ESP32が報告したセンサー状態
-    # nullは「未報告」を表す
-    reported_dht_enabled = models.BooleanField(null=True, blank=True)
-    reported_soil_enabled = models.BooleanField(null=True, blank=True)
-    reported_light_enabled = models.BooleanField(null=True, blank=True)
-
-    # 【最終通信日時】
-    last_seen_at = models.DateTimeField(
-        null=True,
-        blank=True,
-        verbose_name="最終通信日時"
-    )
-
-    class Meta:
-        db_table = "device"
-        verbose_name = "デバイス"
-        verbose_name_plural = "デバイス"
-
-    # 【通信状況】
-    @property
-    def communication_status(self):
-        
-        """ 最終通信日時と計測間隔から通信状態を判定する """
-
-        # 一度も通信していない
-        if self.last_seen_at is None:
-            return "未通信"
-
-        # 判定時間：計測間隔の3倍
-        timeout_seconds = max(self.interval_seconds * 3, 60)
-
-        # 最終通信からの経過時間
-        elapsed = (timezone.now() - self.last_seen_at).total_seconds()
-
-        if elapsed <= timeout_seconds:
-            return "通信確認済み"
-
-        return "通信未確認"
-
-    def __str__(self):
-        return self.device_name
-    
-
-# ==============================
-# 4. センサーログ (SensorLog)
-# ==============================
-# 毎回の計測データ。植物ではなく「どのデバイスが測ったか」に紐づける。
-class SensorLog(models.Model):
-
-    # 【測定デバイス】
-    device = models.ForeignKey(
-        Device,
-        on_delete=models.CASCADE,
-        verbose_name="測定デバイス"
-    )
-
-    # 【ESP32で計測した日時】
-    measured_at = models.DateTimeField(
-        verbose_name="計測日時"
-    )
-
-    # 【Raspberry Piで受信した日時】
-    received_at = models.DateTimeField(
-        default=timezone.now,
-        verbose_name="受信日時"
-    )
-
-    # 【土壌水分生データ】
-    soil_raw = models.IntegerField(
-        null=True,
-        blank=True,
-        verbose_name="土壌水分(生)"
-    )
-
-    # 【光量生データ】
-    light_raw = models.IntegerField(
-        null=True,
-        blank=True,
-        verbose_name="光量(生)"
-    )
-
-    # 【土壌水分】
-    moisture = models.FloatField(
-        null=True,
-        blank=True,
-        verbose_name="土壌水分(%)"
-    )
-
-    # 【光量スコア】
-    light = models.FloatField(
-        null=True,
-        blank=True,
-        verbose_name="光量スコア"
-    )
-
-    # 【温度】
-    temperature= models.FloatField(
-        null=True,
-        blank=True,
-        verbose_name="温度(℃)"
-    )
-
-    # 【湿度】
-    humidity = models.FloatField(
-        null=True,
-        blank=True,
-        verbose_name="湿度(%)"
-    )
-
-    class Meta:
-        db_table = "sensor_logs"
-        ordering = ["-measured_at"]
-        verbose_name="センサーログ"
-        verbose_name_plural="センサーログ"
-
-    def __str__(self):
-        return (
-            f"{self.device.device_name}"
-            f" - {self.measured_at.strftime('%Y-%m-%d %H:%M')}"
-        )
