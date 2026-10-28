@@ -24,7 +24,7 @@ CROP_PRESETS = {
         "msg_moisture_low": "⚠️ 乾燥気味です！根が育つようにお水を。",
         "msg_moisture_high": "🚨 水多すぎ！根割れ（破裂）の原因になります",
         "msg_temp_low": "🥶 寒すぎ（15℃未満）。成長が遅れるかも",
-        "msg_temp_high": "🥵 暑すぎ（25℃超え）。病기에注意して"
+        "msg_temp_high": "🥵 暑すぎ（25℃超え）。注意して"
     },
     "🥬 レタス (室内栽培)": {
         "moisture_min": 40.0, "moisture_max": 75.0, "temp_min": 15.0, "temp_max": 20.0, "hum_min": 50.0,
