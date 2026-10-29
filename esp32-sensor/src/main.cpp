@@ -5,13 +5,18 @@
 #include <Arduino.h>
 
 #include "config/config.h"
+
 #include "models/sensor_data.h"
+
 #include "sensors/dht_sensor.h"
 #include "sensors/soil_sensor.h"
 #include "sensors/light_sensor.h"
-#include "utils/logger.h"
+
+#include "utils/config_manager.h"
 #include "utils/led_indicator.h"
+#include "utils/logger.h"
 #include "utils/time_manager.h"
+
 #include "network/wifi-manager.h"
 #include "network/api_client.h"
 
@@ -19,59 +24,83 @@
 unsigned long lastReadTime = 0;			// 最後にセンサーを読み取った時間
 unsigned long currentInterval = 5000;	// センサー取得間隔
 
-// デバイス設定取得の管理
-constexpr unsigned long CONFIG_CHECK_INTERVAL = 10000;   // 設定の確認間隔（10秒）
-unsigned long lastConfigCheckTime = 0;                  // 設定の最終確認時間
-
-// Raspberry Piから取得した実行時設定
-bool dhtEnabled = SENSOR_DHT_ENABLED;
-bool soilEnabled = SENSOR_SOIL_ENABLED;
-bool lightEnabled = SENSOR_LIGHT_ENABLED;
-
-int currentConfigVersion = 0;           // 現在の設定バージョン
-
 // センサーエラーフラグ
 bool isDhtError = false;
 bool isSoilError = false;
 bool isLightError = false;
 
-// 取得した設定をESP32の実行時設定へ反映する
-void applyDeviceConfig(const DeviceConfig& config)
+// 現在の設定に従ってセンサーを取得し、サーバーへ送信する
+void collectAndSendSensorData()
 {
-    dhtEnabled = config.dhtEnabled;
-    soilEnabled = config.soilEnabled;
-    lightEnabled = config.lightEnabled;
+    const DeviceConfig& config = getCurrentDeviceConfig();
 
-    // 秒単位の設定値をミリ秒へ変換する
-    currentInterval =
-        static_cast<unsigned long>(config.intervalSeconds) * 1000UL;
+    SensorData data;
 
-    currentConfigVersion = config.configVersion;
+    // 現在の時刻を計測データへ設定する
+    data.timestamp = getCurrentTimestamp();
 
-    Serial.println("[CONFIG] Runtime configuration applied.");
-    Serial.print("[CONFIG] Version: ");
-    Serial.println(currentConfigVersion);
-    Serial.print("[CONFIG] Interval: ");
-    Serial.print(config.intervalSeconds);
-    Serial.println(" seconds");
-}
+    // 現在適用されているセンサー設定を反映する
+    data.dhtEnabled = config.dhtEnabled;
+    data.soilEnabled = config.soilEnabled;
+    data.lightEnabled = config.lightEnabled;
 
-// Raspberry Piから設定を取得し、成功した場合だけ反映する
-void checkDeviceConfig()
-{
-    DeviceConfig newConfig;
+    // センサー値を初期化する
+    data.temperature = NAN;
+    data.humidity = NAN;
+    data.soilRaw = -1;
+    data.lightRaw = -1;
 
-    if (fetchDeviceConfig(newConfig))
+    // センサーの有効状態を初期化する
+    data.dhtValid = false;
+    data.soilValid = false;
+    data.lightValid = false;
+
+    // 有効なセンサーだけ読み取る
+    if (data.dhtEnabled)
     {
-        // 初回取得時、または設定バージョンが変わった場合だけ反映する
-        if (newConfig.configVersion != currentConfigVersion)
-        {
-            applyDeviceConfig(newConfig);
-        }
-        else
-        {
-            Serial.println("[CONFIG] No configuration change.");
-        }
+        readDHT(data);
+    }
+
+    if (data.soilEnabled)
+    {
+        readSoil(data);
+    }
+
+    if (data.lightEnabled)
+    {
+        readLight(data);
+    }
+
+    // センサーの読み取り結果を確認する
+    isDhtError = data.dhtEnabled && !data.dhtValid;
+    isSoilError = data.soilEnabled && !data.soilValid;
+    isLightError = data.lightEnabled && !data.lightValid;
+
+    // センサー状態と計測時刻をログに表示する
+    printSystemAlert(
+        data,
+        isDhtError,
+        isSoilError,
+        isLightError
+    );
+
+    printTimeLog(data.timestamp);
+
+    printSensorLog(
+        data,
+        isDhtError,
+        isSoilError,
+        isLightError
+    );
+
+    // センサーデータをRaspberry Piへ送信する
+    Serial.println("Sending data to Django ...");
+
+    int sendResult = sendSensorData(data);
+
+    if (sendResult <= 0)
+    {
+        Serial.println("Failed to send sensor data.");
     }
 }
 
@@ -87,7 +116,10 @@ void setup()
     // 各モジュールの初期化
     initLEDs();
 
-    // 後からセンサーを有効かできるよう、すべてのセンサーを初期化する
+    // 設定管理を初期化する
+    initConfigManager();
+
+    // 後からセンサーを有効化できるよう、すべてのセンサーを初期化する
     initDHT();
     initSoilSensor();
     initLightSensor();
@@ -96,11 +128,20 @@ void setup()
     connectWiFi();
     initTime();
 
-    // 起動時に最新設定を1回取得する
-    checkDeviceConfig();
-    lastConfigCheckTime = millis();
+    // 起動時に最新設定を取得する
+    if (updateDeviceConfig())
+    {
+        const DeviceConfig& config = getCurrentDeviceConfig();
+
+        currentInterval = static_cast<unsigned long>(config.intervalSeconds) * 1000UL;
+    }
 
     Serial.println("Plant Sensor Start");
+
+    // 起動時にセンサーデータを1回取得・送信する
+    collectAndSendSensorData();
+
+    lastReadTime = millis();
 }
 
 //==============================
@@ -111,92 +152,33 @@ void loop()
 
     unsigned long currentMillis = millis(); // 現在のストップウォッチの時間を取得
     
-    // センサー計測とは別に、10秒ごとに設定を確認する
-    if (currentMillis - lastConfigCheckTime >= CONFIG_CHECK_INTERVAL)
+    // 10秒ごとにRaspberry Piの設定変更を確認する
+    if (shouldCheckDeviceConfig(currentMillis))
     {
-        lastConfigCheckTime = currentMillis;
-        checkDeviceConfig();
+        // 設定が変更された場合だけ反映する
+        if (updateDeviceConfig())
+        {
+            const DeviceConfig& config = getCurrentDeviceConfig();
+
+            // 新しい計測間隔をミリ秒へ変換する
+            currentInterval = static_cast<unsigned long>(config.intervalSeconds) * 1000UL;
+
+            // 設定変更後にセンサーデータを1回取得・送信する
+            collectAndSendSensorData();
+
+            // 次回の通常計測までの基準時刻を更新する
+            lastReadTime = millis();
+
+            // 設定取得・送信にかかった時間を反映する
+            currentMillis = millis();
+        }
     }
 
-    // センサーデータ取得
+    // 通常の計測間隔になったらセンサーを取得する
     if (currentMillis - lastReadTime >= currentInterval)
     {
         lastReadTime = currentMillis; // 読み取り時間を更新
-
-        // センサーデータを初期化
-        SensorData data;
-
-        data.timestamp = getCurrentTimestamp();
-
-        // 現在の実行時設定を送信データへ反映する
-        data.dhtEnabled = dhtEnabled;
-        data.soilEnabled = soilEnabled;
-        data.lightEnabled = lightEnabled;
-
-        // 計測結果の初期値
-        data.temperature = NAN;
-        data.humidity = NAN;
-        data.soilRaw = -1;
-        data.lightRaw = -1;
-
-        data.dhtValid = false;
-        data.soilValid = false;
-        data.lightValid = false;
-
-        // 有効なセンサーだけ計測
-        if (data.dhtEnabled)
-        {
-            readDHT(data);
-        }
-
-        if (data.soilEnabled)
-        {
-            readSoil(data);
-        }
-
-        if (data.lightEnabled)
-        {
-            readLight(data);
-        }
-
-        // 無効なセンサーはエラーにしない
-        isDhtError = data.dhtEnabled && !data.dhtValid;
-        isSoilError = data.soilEnabled && !data.soilValid;
-        isLightError = data.lightEnabled && !data.lightValid;
-
-        // ログ表示
-        printSystemAlert(
-            data,
-            isDhtError,
-            isSoilError,
-            isLightError
-        );
-
-        // 計測時刻
-        printTimeLog(data.timestamp);
-
-        // センサーデータ
-        printSensorLog(
-            data,
-            isDhtError,
-            isSoilError,
-            isLightError
-        );
-
-        //==============================
-        // データ送信
-        //==============================
-
-        Serial.println("Sending data to Django ...");
-
-        // 計測間隔は設定取得APIの値を正とする
-        int sendResult = sendSensorData(data);
-
-        if (sendResult <= 0)
-        {
-            Serial.println("Failed to send sensor data.");
-        }
-
+        collectAndSendSensorData();
     }
 
     //==============================

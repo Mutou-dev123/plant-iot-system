@@ -244,6 +244,6 @@ bool fetchDeviceConfig(DeviceConfig& config)
     config.soilEnabled = newSoilEnabled;
     config.lightEnabled = newLightEnabled;
 
-    Serial.println("[CONFIG] Device configuration updated.");
+    Serial.println("[CONFIG] Device configuration fetched.");
     return true;
 }
