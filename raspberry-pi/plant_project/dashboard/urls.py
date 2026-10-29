@@ -106,6 +106,12 @@ urlpatterns = [
     ),
 
     path(
+        "api/device_config/applied/",
+        api.report_applied_config,
+        name="api_report_applied_config",
+    ),
+
+    path(
         "api/chart-data/",
         api.chart_data,
         name="api_chart_data",
