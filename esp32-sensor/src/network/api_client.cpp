@@ -1,7 +1,8 @@
 //==================================================
 // API通信
-// センサーデータをJSON形式へ変換し、
-// HTTP通信で送信する処理を実装する
+//
+// センサーデータをJSON変換とHTTP POST送信、
+// Raspberry Piからのデバイス設定取得を行う。
 //==================================================
 
 #include "api_client.h"
@@ -15,7 +16,7 @@
 
 int sendSensorData(const SensorData& data)
 {
-    // Wi-Fi未接続なら送信しない
+    // Wi-Fi未接続時は通信を行わない
     if (WiFi.status() != WL_CONNECTED)
     {
         Serial.println("[HTTP] Wi-Fi is not connected.");
@@ -157,4 +158,92 @@ int sendSensorData(const SensorData& data)
     http.end();
 
     return nextInterval;
+}
+
+
+bool fetchDeviceConfig(DeviceConfig& config)
+{
+    // Wi-Fi未接続時は設定を取得しない
+    if (WiFi.status() != WL_CONNECTED)
+    {
+        Serial.println("[CONFIG] Wi-Fi is not connected.");
+        return false;
+    }
+
+    // ESP32のMACアドレスをクエリに付けて設定APIを呼び出す
+    String url = String(DEVICE_CONFIG_API_URL)
+                + "?macAddress="
+                + WiFi.macAddress();
+
+    HTTPClient http;
+
+    if (!http.begin(url))
+    {
+        Serial.println("[CONFIG] Failed to begin HTTP connection.");
+        return false;
+    }
+
+    int httpCode = http.GET();
+
+    if (httpCode != 200)
+    {
+        Serial.print("[CONFIG] HTTP error: ");
+        Serial.println(httpCode);
+
+        http.end();
+        return false;
+    }
+
+    String response = http.getString();
+    http.end();
+
+    JsonDocument doc;
+    DeserializationError error = deserializeJson(doc, response);
+
+    if (error)
+    {
+        Serial.print("[CONFIG] JSON parse error: ");
+        Serial.println(error.c_str());
+        return false;
+    }
+
+    // 必要な項目がすべて存在し、型も正しいか確認する
+    JsonVariant configVersion = doc["config_version"];
+    JsonVariant intervalSeconds = doc["interval_seconds"];
+    JsonVariant sensors = doc["sensors"];
+
+    if (!configVersion.is<int>() ||
+        !intervalSeconds.is<int>() ||
+        !sensors.is<JsonObject>() ||
+        !sensors["dht"].is<bool>() ||
+        !sensors["soil"].is<bool>() ||
+        !sensors["light"].is<bool>())
+    {
+        Serial.println("[CONFIG] Invalid response format.");
+        return false;
+    }
+
+    // 正の値であることを確認する
+    int newConfigVersion = configVersion.as<int>();
+    int newIntervalSeconds = intervalSeconds.as<int>();
+
+    if (newConfigVersion <= 0 || newIntervalSeconds <= 0)
+    {
+        Serial.println("[CONFIG] Invalid configuration value.");
+        return false;
+    }
+
+    bool newDhtEnabled = sensors["dht"].as<bool>();
+    bool newSoilEnabled = sensors["soil"].as<bool>();
+    bool newLightEnabled = sensors["light"].as<bool>();
+
+    // 全項目の検証後にまとめて反映
+    config.configVersion = newConfigVersion;
+    config.intervalSeconds = newIntervalSeconds;
+    config.dhtEnabled = newDhtEnabled;
+    config.soilEnabled = newSoilEnabled;
+    config.lightEnabled = newLightEnabled;
+
+    Serial.println("[CONFIG] Device configuration updated.");
+    return true;
 }
