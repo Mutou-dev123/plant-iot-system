@@ -57,8 +57,13 @@ constexpr int WIFI_COUNT =
 // Raspberry Pi API
 // =========================
 
+// センサーデータ送信用API
 constexpr const char* API_URL =
     "http://YOUR_RASPBERRY_PI_IP:8000/api/receive";
+
+// デバイス設定取得用API
+constexpr const char* DEVICE_CONFIG_API_URL =
+    "http://YOUR_RASPBERRY_PI_IP:8000/api/device_config/";
 
 #endif
 
