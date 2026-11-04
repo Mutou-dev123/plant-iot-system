@@ -65,6 +65,10 @@ constexpr const char* API_URL =
 constexpr const char* DEVICE_CONFIG_API_URL =
     "http://YOUR_RASPBERRY_PI_IP:8000/api/device_config/";
 
+// デバイス設定適用報告用API
+constexpr const char* DEVICE_CONFIG_APPLIED_API_URL =
+    "http://YOUR_RASPBERRY_PI_IP:8000/api/device_config/applied/";
+
 #endif
 
 // ※ このファイルをconfig.hにコピーして使用してください。

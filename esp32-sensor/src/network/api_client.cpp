@@ -247,3 +247,72 @@ bool fetchDeviceConfig(DeviceConfig& config)
     Serial.println("[CONFIG] Device configuration fetched.");
     return true;
 }
+
+bool reportAppliedDeviceConfig(int configVersion)
+{
+    // Wi-Fi未接続時は適用報告は行わない
+    if (WiFi.status() != WL_CONNECTED)
+    {
+        Serial.println("[CONFIG] Wi-Fi is not connected.");
+        return false;
+    }
+
+    // 適用済み設定報告用のJSONを作成する
+    JsonDocument doc;
+
+    doc["macAddress"] = WiFi.macAddress();
+    doc["applied_config_version"] = configVersion;
+
+    String json;
+    serializeJson(doc, json);
+
+    HTTPClient http;
+
+    // 適用済み設定報告APIへ接続する
+    if (!http.begin(DEVICE_CONFIG_APPLIED_API_URL))
+    {
+        Serial.println(
+            "[CONFIG] Failed to begin applied config report."
+        );
+        return false;
+    }
+
+    http.addHeader("Content-Type", "application/json");
+
+    Serial.println("[CONFIG] Reporting applied configuration.");
+    Serial.println(json);
+
+    int httpCode = http.POST(json);
+    String response = http.getString();
+
+    http.end();
+
+    // HTTP通信の成功を確認する
+    if (httpCode != 200)
+    {
+        Serial.print("[CONFIG] Report HTTP error: ");
+        Serial.println(httpCode);
+        return false;
+    }
+
+    // Raspberry Piのレスポンスを解析する
+    JsonDocument responseDoc;
+    DeserializationError error = deserializeJson(responseDoc, response);
+
+    if (error)
+    {
+        Serial.print("[CONFIG] Report JSON parse error: ");
+        Serial.println(error.c_str());
+        return false;
+    }
+
+    // up_to_dateがtrueの場合だけ報告成功とする
+    if (!responseDoc["up_to_date"].is<bool>() || !responseDoc["up_to_date"].as<bool>())
+    {
+        Serial.println("[CONFIG] Applied version is not up to date.");
+        return false;
+    }
+
+    Serial.println("[CONFIG] Applied configuration reported.");
+    return true;
+}

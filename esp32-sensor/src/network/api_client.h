@@ -36,4 +36,13 @@ int sendSensorData(const SensorData& data);
  */
 bool fetchDeviceConfig(DeviceConfig& config);
 
+/**
+ * @brief 適用済みの設定バージョンをRaspberry Piへ報告する
+ * 
+ * @param configVersion 適用済みの設定バージョン
+ * @return true 報告成功かつup_to_dateがtrue
+ * @return false 報告失敗または未反映
+ */
+bool reportAppliedDeviceConfig(int configVersion);
+
 #endif
