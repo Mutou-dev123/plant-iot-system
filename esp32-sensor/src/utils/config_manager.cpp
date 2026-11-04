@@ -26,6 +26,10 @@ static DeviceConfig currentConfig = {
     SENSOR_LIGHT_ENABLED
 };
 
+// 最後にRaspberry Piへの報告が成功した設定バージョン
+static int lastReportedConfigVersion = 0;
+
+
 //==================================================
 // 設定管理の初期化
 //==================================================
@@ -77,22 +81,48 @@ bool updateDeviceConfig()
         return false;
     }
 
-    // 設定バージョンが同じ場合は反映不要
+    // 古い設定は適用しない
+    if (newConfig.configVersion < currentConfig.configVersion)
+    {
+        Serial.println("[CONFIG] Received an older configuration.");
+        return false;
+    }
+
+    bool configChanged = false;
+
     if (newConfig.configVersion == currentConfig.configVersion)
     {
         Serial.println("[CONFIG] No configuration change.");
         return false;
     }
+    else
+    {
+        // 新しい設定を現在の設定として反映する
+        currentConfig = newConfig;
+        configChanged = true;
+    
+        Serial.println("[CONFIG] Configuration changed.");
+        Serial.print("[CONFIG] Version: ");
+        Serial.println(currentConfig.configVersion);
+        Serial.print("[CONFIG] Interval: ");
+        Serial.print(currentConfig.intervalSeconds);
+        Serial.println(" seconds");
+    }
 
-    // 新しい設定を現在の設定として繁栄する
-    currentConfig = newConfig;
-
-    Serial.println("[CONFIG] Configuration changed.");
-    Serial.print("[CONFIG] Version: ");
-    Serial.println(currentConfig.configVersion);
-    Serial.print("[CONFIG] Interval: ");
-    Serial.print(currentConfig.intervalSeconds);
-    Serial.println(" seconds");
+    // 未報告の適用済みバージョンを報告する
+    // 失敗した場合は、次回の設定確認時に再試行する
+    if (currentConfig.configVersion != lastReportedConfigVersion)
+    {
+        if (reportAppliedDeviceConfig(currentConfig.configVersion))
+        {
+            lastReportedConfigVersion = currentConfig.configVersion;
+            Serial.println("[CONFIG] Applied configuration reported.");
+        };
+    }
+    else
+    {
+        Serial.println("[CONFIG] Failed to report applied configuration.");
+    }
 
     return true;
 }
