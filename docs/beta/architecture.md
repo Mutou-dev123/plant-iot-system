@@ -2,7 +2,7 @@
 
 # システム構成（β版）
 
-ここでは、ObserLeaf（β版）のシステム構成と、各コンポーネントの役割・設計意図についてまとめています。
+ここでは、ObserLeaf（β版）のシステム構成と、各コンポーネントの役割・設計意図についてまとめている。
 
 
 ## 1. システム構成図
@@ -25,7 +25,7 @@ graph LR
 
         %% センサー
         subgraph Sensors["センサー"]
-            DHT("温湿度センサー<br>DHT11 or DHT22")
+            DHT("温湿度センサー<br>DHT22")
             Soil("土壌水分センサー<br>Capacitive Soil Moisture Sensor v1.2")
             Light("照度センサー<br>LM393")
         end

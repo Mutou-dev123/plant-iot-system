@@ -99,6 +99,7 @@ class SensorService:
 
         SensorLog.objects.create(
             device=device,
+            plant=device.plant,
             measured_at=measured_at,
             received_at=received_at,
             soil_raw=soil_raw,
