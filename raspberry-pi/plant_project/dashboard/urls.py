@@ -17,6 +17,7 @@ urlpatterns = [
         name="dashboard",
     ),
 
+
     # ==========================================
     # 育成植物管理
     # ==========================================
@@ -26,6 +27,13 @@ urlpatterns = [
         "plants/",
         plants.plant_list,
         name="plant_list",
+    ),
+
+    # アーカイブ一覧
+    path(
+        "plants/archived/",
+        plants.plant_archived_list,
+        name="plant_archived_list",
     ),
 
     # 作成
@@ -49,12 +57,20 @@ urlpatterns = [
         name="plant_edit",
     ),
 
-    # 削除
+    # アーカイブ化
     path(
-        "plants/<int:plant_id>/delete/",
-        plants.plant_delete,
-        name="plant_delete",
+        "plants/<int:plant_id>/archive/",
+        plants.plant_archive,
+        name="plant_archive",
     ),
+
+    # 復元
+    path(
+        "plants/<int:plant_id>/restore/",
+        plants.plant_restore,
+        name="plant_restore",
+    ),
+
 
     # ==========================================
     # デバイス管理
@@ -94,6 +110,7 @@ urlpatterns = [
         devices.device_delete,
         name="device_delete",
     ),
+
 
     # ==========================================
     # API

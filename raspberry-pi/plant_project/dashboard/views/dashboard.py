@@ -137,7 +137,7 @@ def index(request):
 
     # 植物マスタの取得
     if latest_log:
-        plant = latest_log.device.plant
+        plant = latest_log.plant
 
         if plant:
             plant_master = plant.plant_master

@@ -73,9 +73,10 @@
 
         </table>
 
-        <!-- 操作ボタン -->
+        <!-- 操作ボタン群 -->
         <div class="action-buttons">
 
+            <!-- 編集 -->
             <a
                 href="{% url 'plant_edit' plant.id %}"
                 class="button button-edit"
@@ -83,24 +84,27 @@
                 編集
             </a>
 
-            <form
-                action="{% url 'plant_delete' plant.id %}"
-                method="post"
-                onsubmit="return confirm('「{{ plant.custom_name }}」を削除しますか？');"
-                class="inline-form"
-            >
-
-                {% csrf_token %}
-
-                <button
-                    type="submit"
-                    class="button button-delete"
+            <!-- アーカイブ・復元ボタン -->
+            {% if plant.is_archived %}
+                <form
+                    action="{% url 'plant_restore' plant.id %}"
+                    method="post"
+                    class="inline-form"
                 >
-                    削除
-                </button>
-
-            </form>
-
+                    {% csrf_token %}
+                    <button type="submit" class="button button-edit">復元</button>
+                </form>
+            {% else %}
+                <form
+                    action="{% url 'plant_archive' plant.id %}"
+                    method="post"
+                    onsubmit="return confirm('「{{ plant.custom_name }}」をアーカイブしますか？');"
+                    class="inline-form"
+                >
+                    {% csrf_token %}
+                    <button type="submit" class="button button-delete">アーカイブ</button>
+                </form>
+            {% endif %}
         </div>
 
     </div>
