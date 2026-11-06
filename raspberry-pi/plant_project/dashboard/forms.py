@@ -38,6 +38,12 @@ class PlantForm(forms.ModelForm):
 # ==========================================
 class DeviceForm(forms.ModelForm):
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["plant"].queryset = Plant.objects.filter(
+            is_archived=False
+        )
+
     class Meta:
         model = Device
 

@@ -15,12 +15,20 @@
 
 <div class="list-header">
 
-    <h1>植物管理</h1>
-    
-    <!-- 植物登録画面遷移ボタン -->
-    <a href="{% url 'plant_create' %}" class="button">
-        + 植物を登録
-    </a>
+    <h1>
+        {% if is_archived_list %}
+            アーカイブ済みの植物
+        {% else %}
+            植物管理
+        {% endif %}
+    </h1>
+
+    {% if is_archived_list %}
+        <a href="{% url 'plant_list' %}" class="button">植物一覧へ戻る</a>
+    {% else %}
+        <a href="{% url 'plant_create' %}" class="button">+ 植物を登録</a>
+        <a href="{% url 'plant_archived_list' %}" class="button">アーカイブ済みを見る</a>
+    {% endif %}
 
 </div>
 
@@ -48,6 +56,7 @@
                 <td>{{ plant.plant_master.name }}</td>
                 <td>{{ plant.start_date }}</td>
                 <td>
+                    <!-- アクションボタン群 -->
                     <div class="action-buttons">
                         
                         <!-- 詳細ボタン -->
@@ -66,25 +75,27 @@
                             編集
                         </a>
     
-                        <!-- 削除ボタン -->
-                        <form
-                            action="{% url 'plant_delete' plant.id %}"
-                            method="post"
-                            onsubmit="return confirm('「{{ plant.custom_name }}」を削除しますか？');"
-                            class="inline-form"
-                        >
-    
-                            {% csrf_token %}
-    
-                            <button
-                                type="submit"
-                                class="button button-delete"
+                        <!-- アーカイブ・復元ボタン -->
+                        {% if is_archived_list %}
+                            <form
+                                action="{% url 'plant_restore' plant.id %}"
+                                method="post"
+                                class="inline-form"
                             >
-                                削除
-                            </button>
-    
-                        </form>
-                        
+                                {% csrf_token %}
+                                <button type="submit" class="button button-edit">復元</button>
+                            </form>
+                        {% else %}
+                            <form
+                                action="{% url 'plant_delete' plant.id %}"
+                                method="post"
+                                onsubmit="return confirm('「{{ plant.custom_name }}」をアーカイブしますか？');"
+                                class="inline-form"
+                            >
+                                {% csrf_token %}
+                                <button type="submit" class="button button-delete">アーカイブ</button>
+                            </form>
+                        {% endif %}
                     </div>
 
                 </td>

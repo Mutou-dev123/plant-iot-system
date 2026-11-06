@@ -176,6 +176,13 @@ class Plant(models.Model):
         verbose_name="栽培開始日"
     )
 
+    # 【アーカイブフラグ】
+    is_archived = models.BooleanField(
+        default=False,
+        db_index=True,
+        verbose_name="アーカイブ済み"
+    )
+
     class Meta:
         db_table = "plant"
         verbose_name = "育成植物"
