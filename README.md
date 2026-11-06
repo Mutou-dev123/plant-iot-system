@@ -50,19 +50,19 @@ ObserLeaf（Plant Environment Visualization System）は、センサーによっ
 ## 🚀 主な機能
 
 ### ■ データ取得
-- 温湿度・土壌水分センサーによるデータ取得
-- Raspberry Piによる定期的なセンサーデータ収集
+- 温湿度・土壌水分・照度センサーによるデータ取得
+- ESP32による定期的な計測とRaspberry Piへの送信
 
 ### ■ データ処理
-- しきい値判定ロジックによる状態分類
-- リアルタイムデータ処理
+- 受信データの検証と、土壌水分率・光量への換算
+- 植物ごとの適性範囲との比較による環境状態の判定
 
 ### ■ データ保存
-- CSV / SQLiteによる履歴管理
+- SQLiteによる履歴管理
 
 ### ■ 可視化
-- StreamlitによるWeb表示
-- altairによるグラフ描画 
+- DjangoによるWeb表示
+- Chart.jsによるグラフ描画 
 
 ### ■ 状態フィードバック
 - 環境状態に応じたメッセージ表示
@@ -79,7 +79,7 @@ Raspberry Piとセンサーを用いて環境データを取得し、データ�
 
 IoTシステムの基本となるデータ取得からWeb上での可視化までの流れを構築し、環境モニタリングの基盤を実装することを目的とする。
 
-**詳細ドキュメント**
+#### 詳細ドキュメント
 
 - [α v1版概要](/docs/alpha/v1/overview.md)
 
@@ -94,13 +94,23 @@ ESP32による無線センサーノードと、Raspberry Pi上のDjangoアプリ
 
 センサーデータの送信方法やデータ管理基盤を見直し、複数の植物を対象とした観測や、継続的なデータ管理に対応できる構成を目指す。
 
-**詳細ドキュメント**
+#### 詳細ドキュメント
 
 - [β版概要](/docs/beta/overview.md)
 
 - [β版システム構成図](/docs/beta/architecture.md)
 
+- [β版ESP32仕様](/docs/beta/esp32-spec.md)
+
+- [β版サーバー仕様](/docs/beta/server-spec.md)
+
 - [β版データフロー図](/docs/beta/data-flow.md)
+
+- [β版データ管理方針](/docs/beta/data-management.md)
+
+- [β版ER図](/docs/beta/er-diagram.md)
+
+- [β版セットアップ・運用手順書](/docs/beta/setup-guide.md)
 
 
 ## 📁 フォルダ構成
@@ -137,10 +147,10 @@ graph LR
 
         alpha_v1("alpha_v1.py")
         alpha_v2("alpha_v2.py")
-
-        PP["plant_project"]
         sensor_app("sensor_app.py")
         sensor_logger("sensor_logger.py")
+
+        PP["plant_project"]
 
         practice["practice"]
         led("led.py")

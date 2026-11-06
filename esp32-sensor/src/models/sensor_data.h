@@ -14,7 +14,7 @@ struct SensorData
     // 基本情報
     //========================
 
-    uint32_t timestamp; // 計測時刻(ms)
+    uint32_t timestamp; // 計測時刻(Unix Time、秒)
 
     //========================
     // 環境データ
