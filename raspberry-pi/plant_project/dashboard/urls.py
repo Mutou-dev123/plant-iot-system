@@ -29,6 +29,13 @@ urlpatterns = [
         name="plant_list",
     ),
 
+    # アーカイブ一覧
+    path(
+        "plants/archived/",
+        plants.plant_archived_list,
+        name="plant_archived_list",
+    ),
+
     # 作成
     path(
         "plants/create/",
@@ -52,9 +59,9 @@ urlpatterns = [
 
     # アーカイブ化
     path(
-        "plants/archived/",
-        plants.plant_archived_list,
-        name="plant_archived_list",
+        "plants/<int:plant_id>/archive/",
+        plants.plant_archive,
+        name="plant_archive",
     ),
 
     # 復元

@@ -38,7 +38,7 @@ def plant_archived_list(request):
         "plants/plant_list.html",
         {
             "plants": plants,
-            "is_archived": True,
+            "is_archived_list": True,
         },
     )
 
@@ -136,18 +136,19 @@ def plant_edit(request, plant_id):
 # ==========================================
 # 5. アーカイブ化処理
 # ==========================================
+@require_POST
 @transaction.atomic
-def plant_delete(request, plant_id):
+def plant_archive(request, plant_id):
 
     plant = get_object_or_404(
         Plant,
         pk=plant_id,
+        is_archived=False,
     )
 
-    if request.method == "POST":
-        Device.objects.filter(plant=plant).update(plant=None)
-        plant.is_archived = True
-        plant.save(update_fields=["is_archived"])
+    Device.objects.filter(plant=plant).update(plant=None)
+    plant.is_archived = True
+    plant.save(update_fields=["is_archived"])
 
     return redirect("plant_list")
 

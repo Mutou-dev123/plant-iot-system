@@ -87,7 +87,7 @@
                             </form>
                         {% else %}
                             <form
-                                action="{% url 'plant_delete' plant.id %}"
+                                action="{% url 'plant_archive' plant.id %}"
                                 method="post"
                                 onsubmit="return confirm('「{{ plant.custom_name }}」をアーカイブしますか？');"
                                 class="inline-form"
