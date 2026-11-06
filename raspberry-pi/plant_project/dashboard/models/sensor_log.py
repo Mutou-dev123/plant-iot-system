@@ -4,7 +4,7 @@ from django.utils import timezone
 # ==============================
 # 4. センサーログ (SensorLog)
 # ==============================
-# 毎回の計測データ。植物ではなく「どのデバイスが測ったか」に紐づける。
+# 毎回の計測データ。計測デバイスと、その時点の観測対象植物を記録する。
 class SensorLog(models.Model):
 
     # 【測定デバイス】
@@ -12,6 +12,16 @@ class SensorLog(models.Model):
         "dashboard.Device",
         on_delete=models.CASCADE,
         verbose_name="測定デバイス"
+    )
+
+    # 【計測時点の観測対象植物】
+    plant = models.ForeignKey(
+        "dashboard.Plant",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="sensor_logs",
+        verbose_name="観測対象の植物"
     )
 
     # 【ESP32で計測した日時】
