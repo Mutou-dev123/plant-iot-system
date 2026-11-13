@@ -1,10 +1,14 @@
 import json
 
+from datetime import date
+
 from django.test import TestCase
 from django.urls import reverse
 from django.utils import timezone
+from django.db import IntegrityError, transaction
+from django.db.models.deletion import ProtectedError
 
-from dashboard.models import Device, Plant, SensorLog
+from dashboard.models import Device, Plant, SensorLog, DailySensorSummary
 from dashboard.services.sensor_service import SensorService
 from dashboard.forms import DeviceForm
 
@@ -144,3 +148,55 @@ class PlantArchiveTests(TestCase):
             self.plant,
             form.fields["plant"].queryset,
         )
+
+class DailySensorSummaryModelTests(TestCase):
+    def setUp(self):
+        self.plant = Plant.objects.create(custom_name="集計テスト植物")
+        self.device = Device.objects.create(
+            device_name="summary-test-device",
+            plant=self.plant,
+        )
+        self.summary_date = date(2026, 11, 13)
+
+    def _create_summary(self, **kwargs):
+        return DailySensorSummary.objects.create(
+            device=self.device,
+            summary_date=self.summary_date,
+            **kwargs,
+        )
+
+    def test_prevents_duplicate_summary_for_same_device_plant_and_date(self):
+        self._create_summary(plant=self.plant)
+
+        with self.assertRaises(IntegrityError):
+            with transaction.atomic():
+                self._create_summary(plant=self.plant)
+
+    def test_prevents_duplicate_unassigned_summary_for_same_device_and_date(self):
+        self._create_summary()
+
+        with self.assertRaises(IntegrityError):
+            with transaction.atomic():
+                self._create_summary()
+
+    def test_allows_unassigned_summaries_for_different_devices(self):
+        self._create_summary()
+
+        other_device = Device.objects.create(
+            device_name="another-summary-device",
+        )
+        DailySensorSummary.objects.create(
+            device=other_device,
+            summary_date=self.summary_date,
+        )
+
+        self.assertEqual(DailySensorSummary.objects.count(), 2)
+
+    def test_protects_device_and_plant_with_summary_from_delection(self):
+        self._create_summary(plant=self.plant)
+
+        with self.assertRaises(ProtectedError):
+            self.device.delete()
+
+        with self.assertRaises(ProtectedError):
+            self.plant.delete()
