@@ -4,7 +4,7 @@ from django.core.exceptions import ValidationError
 from django.utils import timezone
 
 # ==============================
-# 1. 植物マスタ (PlantMaster)
+# 植物マスタ (PlantMaster)
 # ==============================
 # システムに登録されている植物の図鑑データ。ユーザーが追加することも可能。
 # 植物ごとに適切な温度や湿度の情報を記録する
@@ -149,7 +149,7 @@ class PlantMaster(models.Model):
 
 
 # ==============================
-# 2. 育成植物 (Plant)
+# 育成植物 (Plant)
 # ==============================
 # ユーザーが実際に育てている植物
 class Plant(models.Model):
