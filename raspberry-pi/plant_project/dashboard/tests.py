@@ -10,6 +10,7 @@ from django.db.models.deletion import ProtectedError
 
 from dashboard.models import Device, Plant, SensorLog, DailySensorSummary
 from dashboard.services.sensor_service import SensorService
+from dashboard.services.daily_sensor_summary_service import DailySensorSummaryService
 from dashboard.forms import DeviceForm
 
 
@@ -149,6 +150,7 @@ class PlantArchiveTests(TestCase):
             form.fields["plant"].queryset,
         )
 
+
 class DailySensorSummaryModelTests(TestCase):
     def setUp(self):
         self.plant = Plant.objects.create(custom_name="集計テスト植物")
@@ -200,3 +202,109 @@ class DailySensorSummaryModelTests(TestCase):
 
         with self.assertRaises(ProtectedError):
             self.plant.delete()
+
+
+class DailySensorSummaryServiceTests(TestCase):
+    def setUp(self):
+        self.plant = Plant.objects.create(custom_name="集計対象植物")
+        self.device = Device.objects.create(
+            device_name="aggregation-test-device",
+            plant=self.plant,
+        )
+        self.summary_date = date(2026, 11, 13)
+
+    def test_aggregates_measurements_and_counts_non_null_values(self):
+        SensorLog.objects.create(
+            device=self.device,
+            plant=self.plant,
+            measured_at=timezone.make_aware(
+                timezone.datetime(2026, 11, 13, 1, 0),
+                timezone=timezone.get_current_timezone(),
+            ),
+            temperature=20.0,
+            humidity=50.0,
+            moisture=None,
+            light=100.0,
+        )
+        SensorLog.objects.create(
+            device=self.device,
+            plant=self.plant,
+            measured_at=timezone.make_aware(
+                timezone.datetime(2026, 11, 13, 2, 0),
+                timezone=timezone.get_current_timezone(),
+            ),
+            temperature=24.0,
+            humidity=None,
+            moisture=60.0,
+            light=200.0,
+        )
+
+        summary = DailySensorSummaryService.aggregate_day(
+            self.device,
+            self.plant,
+            self.summary_date,
+        )
+
+        self.assertEqual(summary.log_count, 2)
+
+        self.assertAlmostEqual(summary.temperature_avg, 22.0)
+        self.assertEqual(summary.temperature_min, 20.0)
+        self.assertEqual(summary.temperature_max, 24.0)
+        self.assertEqual(summary.temperature_count, 2)
+
+        self.assertEqual(summary.humidity_avg, 50.0)
+        self.assertEqual(summary.humidity_count, 1)
+
+        self.assertEqual(summary.moisture_avg, 60.0)
+        self.assertEqual(summary.moisture_count, 1)
+
+        self.assertAlmostEqual(summary.light_avg, 150.0)
+        self.assertEqual(summary.light_count, 2)
+
+    def test_recalculating_updates_existing_summary(self):
+        SensorLog.objects.create(
+            device=self.device,
+            plant=self.plant,
+            measured_at=timezone.make_aware(
+                timezone.datetime(2026, 11, 13, 1, 0),
+                timezone=timezone.get_current_timezone(),
+            ),
+            temperature=20.0,
+        )
+
+        first_summary = DailySensorSummaryService.aggregate_day(
+            self.device,
+            self.plant,
+            self.summary_date,
+        )
+
+        SensorLog.objects.create(
+            device=self.device,
+            plant=self.plant,
+            measured_at=timezone.make_aware(
+                timezone.datetime(2026, 11, 13, 2, 0),
+                timezone=timezone.get_current_timezone(),
+            ),
+            temperature=24.0,
+        )
+
+        second_summary = DailySensorSummaryService.aggregate_day(
+            self.device,
+            self.plant,
+            self.summary_date,
+        )
+
+        self.assertEqual(first_summary.pk, second_summary.pk)
+        self.assertEqual(DailySensorSummary.objects.count(), 1)
+        self.assertAlmostEqual(second_summary.temperature_avg, 22.0)
+        self.assertEqual(second_summary.temperature_count, 2)
+
+    def test_returns_none_when_day_has_no_logs(self):
+        summary = DailySensorSummaryService.aggregate_day(
+            self.device,
+            self.plant,
+            self.summary_date,
+        )
+
+        self.assertIsNone(summary)
+        self.assertFalse(DailySensorSummary.objects.exists())
