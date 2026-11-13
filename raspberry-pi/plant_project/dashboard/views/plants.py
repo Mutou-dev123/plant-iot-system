@@ -4,9 +4,13 @@
 
 from django.shortcuts import render, redirect, get_object_or_404
 
-from dashboard.models import Plant
+from django.db import transaction
+
+from dashboard.models import Device, Plant
 
 from dashboard.forms import PlantForm
+
+from django.views.decorators.http import require_POST
 
 
 # ==========================================
@@ -14,16 +18,28 @@ from dashboard.forms import PlantForm
 # ==========================================
 def plant_list(request):
 
-    plants = Plant.objects.all()
-
-    context = {
-        "plants": plants,
-    }
+    plants = Plant.objects.filter(is_archived=False)
 
     return render(
         request,
         "plants/plant_list.html",
-        context
+        {
+            "plants": plants,
+            "is_archived_list": False,
+        },
+    )
+
+def plant_archived_list(request):
+
+    plants = Plant.objects.filter(is_archived=True)
+
+    return render(
+        request,
+        "plants/plant_list.html",
+        {
+            "plants": plants,
+            "is_archived_list": True,
+        },
     )
 
 
@@ -76,6 +92,7 @@ def plant_create(request):
         context,
     )
 
+
 # ==========================================
 # 4. 編集
 # ==========================================
@@ -115,17 +132,39 @@ def plant_edit(request, plant_id):
         context,
     )
 
+
 # ==========================================
-# 5. 削除
+# 5. アーカイブ化処理
 # ==========================================
-def plant_delete(request, plant_id):
+@require_POST
+@transaction.atomic
+def plant_archive(request, plant_id):
 
     plant = get_object_or_404(
         Plant,
         pk=plant_id,
+        is_archived=False,
     )
 
-    if request.method == "POST":
-        plant.delete()
+    Device.objects.filter(plant=plant).update(plant=None)
+    plant.is_archived = True
+    plant.save(update_fields=["is_archived"])
 
     return redirect("plant_list")
+
+
+# ==========================================
+# 6. 復元処理
+# ==========================================
+@require_POST
+def plant_restore(request, plant_id):
+
+    plant = get_object_or_404(
+        Plant,
+        pk=plant_id,
+        is_archived=True,
+    )
+    plant.is_archived = False
+    plant.save(update_fields=["is_archived"])
+
+    return redirect("plant_archived_list")
