@@ -1,6 +1,6 @@
 import json
 
-from datetime import date
+from datetime import date, datetime, timezone as datetime_timezone
 
 from django.test import TestCase
 from django.urls import reverse
@@ -22,13 +22,13 @@ class SensorLogPlantTests(TestCase):
             plant=plant,
         )
 
-    def _receive_sensor_data(self):
+    def _receive_sensor_data(self, timestamp=1):
         payload = {
             "deviceName": "test-device",
             "macAddress": "AA:BB:CC:DD:EE:FF",
             "ipAddress": "192.168.1.10",
             "firmwareVersion": "test",
-            "timestamp": 1,
+            "timestamp": timestamp,
             "dhtEnabled": False,
             "soilEnabled": False,
             "lightEnabled": False,
@@ -72,6 +72,55 @@ class SensorLogPlantTests(TestCase):
             [log.plant_id for log in logs],
             [original_plant.id, new_plant.id],
         )
+
+    def test_receive_creates_pending_task_for_japan_date(self):
+        plant = Plant.objects.create(custom_name="タスク対象植物")
+        device = self._create_device(plant=plant)
+
+        # 2026-11-12 15:00 UTC は、日本時間の11月13日 00:00
+        timestamp = int(
+            datetime(
+                2026, 11, 12, 15, 0,
+                tzinfo=datetime_timezone.utc,
+            ).timestamp()
+        )
+        self._receive_sensor_data(timestamp=timestamp)
+
+        task = DailySensorAggregationTask.objects.get()
+        self.assertEqual(task.device, device)
+        self.assertEqual(task.plant, plant)
+        self.assertEqual(task.summary_date, date(2026, 11, 13))
+        self.assertEqual(task.status, DailySensorAggregationTask.Status.PENDING)
+        self.assertEqual(SensorLog.objects.count(), 1)
+
+    def test_receive_creates_unassigned_task_when_device_has_no_plant(self):
+        self._create_device()
+
+        self._receive_sensor_data()
+
+        task = DailySensorAggregationTask.objects.get()
+        self.assertIsNone(task.plant)
+        self.assertEqual(task.status, DailySensorAggregationTask.Status.PENDING)
+
+    def test_receive_requeues_existing_task_without_creating_duplicate(self):
+        plant = Plant.objects.create(custom_name="再試行対象植物")
+        self._create_device(plant=plant)
+        self._receive_sensor_data()
+
+        task=DailySensorAggregationTask.objects.get()
+        task.status = DailySensorAggregationTask.Status.FAILED
+        task.attempt_count = 2
+        task.last_error = "一時的なエラー"
+        task.save(update_fields=["status", "attempt_count", "last_error"])
+
+        self._receive_sensor_data()
+
+        task.refresh_from_db()
+        self.assertEqual(DailySensorAggregationTask.objects.count(), 1)
+        self.assertEqual(task.status, DailySensorAggregationTask.Status.PENDING)
+        self.assertEqual(task.last_error, "")
+        self.assertEqual(task.attempt_count, 2)
+        self.assertEqual(SensorLog.objects.count(), 2)
 
 
 class PlantArchiveTests(TestCase):

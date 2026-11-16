@@ -14,13 +14,18 @@
 
 import json
 from datetime import datetime
+from zoneinfo import ZoneInfo
 
 from django.utils import timezone
 
-from dashboard.models import SensorLog
+from django.db import transaction
+
+from dashboard.models import SensorLog, DailySensorAggregationTask
 from .device_service import DeviceService           # デバイス管理
 from .conversion_service import ConversionService   # センサーデータ変換
 from .validator_service import ValidatorService     # バリデーションサービス
+
+JAPAN_TZ = ZoneInfo("Asia/Tokyo")
 
 
 class SensorService:
@@ -93,26 +98,39 @@ class SensorService:
             else ConversionService.calculate_light_score(data["lightRaw"])
         )
 
+        plant = device.plant
+        summary_date = timezone.localdate(measured_at, timezone=JAPAN_TZ)
+
         # ==========================================
         # DB保存
         # ==========================================
+        with transaction.atomic():
+            SensorLog.objects.create(
+                device=device,
+                plant=plant,
+                measured_at=measured_at,
+                received_at=received_at,
+                soil_raw=soil_raw,
+                light_raw=light_raw,
+                moisture=moisture,
+                light=light,
+                temperature=temperature,
+                humidity=humidity
+            )
 
-        SensorLog.objects.create(
-            device=device,
-            plant=device.plant,
-            measured_at=measured_at,
-            received_at=received_at,
-            soil_raw=soil_raw,
-            light_raw=light_raw,
-            moisture=moisture,
-            light=light,
-            temperature=temperature,
-            humidity=humidity
-        )
+            DailySensorAggregationTask.objects.update_or_create(
+                device=device,
+                plant=plant,
+                summary_date=summary_date,
+                defaults={
+                    "status": DailySensorAggregationTask.Status.PENDING,
+                    "last_error": "",
+                },
+            )
 
-        # 最終通信日時を更新
-        device.last_seen_at = received_at
-        device.save(update_fields=["last_seen_at"])
+            # 最終通信日時を更新
+            device.last_seen_at = received_at
+            device.save(update_fields=["last_seen_at"])
 
         return {
             "status": "success",
