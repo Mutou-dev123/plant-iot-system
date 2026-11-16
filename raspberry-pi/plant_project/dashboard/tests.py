@@ -2,11 +2,13 @@ import json
 
 from datetime import date, datetime, timezone as datetime_timezone
 
+from django.core.management import call_command, CommandError
 from django.test import TestCase
 from django.urls import reverse
 from django.utils import timezone
-from django.db import IntegrityError, transaction
+from django.db import IntegrityError, transaction, OperationalError
 from django.db.models.deletion import ProtectedError
+from unittest.mock import patch
 
 from dashboard.models import Device, Plant, SensorLog, DailySensorSummary, DailySensorAggregationTask
 from dashboard.services.sensor_service import SensorService
@@ -426,3 +428,77 @@ class DailySensorAggregationTaskModelTests(TestCase):
 
         with self.assertRaises(ProtectedError):
             self.plant.delete()
+
+
+class ProcessDailySensorAggregationTasksCommandTests(TestCase):
+    def setUp(self):
+        self.plant = Plant.objects.create(custom_name="コマンドテスト植物")
+        self.device = Device.objects.create(
+            device_name="command-test_device",
+            plant=self.plant,
+        )
+        self.summary_date = date(2026, 11, 13)
+
+        measured_at = timezone.make_aware(
+            timezone.datetime(2026, 11, 13, 12, 0),
+            timezone=timezone.get_current_timezone(),
+        )
+        SensorLog.objects.create(
+            device=self.device,
+            plant=self.plant,
+            measured_at=measured_at,
+            temperature=22.0,
+        )
+        self.task = DailySensorAggregationTask.objects.create(
+            device=self.device,
+            plant=self.plant,
+            summary_date=self.summary_date,
+        )
+
+    def test_command_aggregates_and_marks_task_completed(self):
+        call_command("process_daily_sensor_aggregation_tasks")
+
+        self.task.refresh_from_db()
+        summary = DailySensorSummary.objects.get(
+            device=self.device,
+            plant=self.plant,
+            summary_date=self.summary_date,
+        )
+
+        self.assertEqual(
+            self.task.status,
+            DailySensorAggregationTask.Status.COMPLETED,
+        )
+        self.assertEqual(self.task.attempt_count, 1)
+        self.assertIsNotNone(self.task.last_attempt_at)
+        self.assertEqual(self.task.last_error, "")
+        self.assertEqual(summary.temperature_avg, 22.0)
+
+    def test_failed_task_is_recorded_and_retried_on_next_run(self):
+        command_path = (
+            "dashboard.management.commands."
+            "process_daily_sensor_aggregation_tasks."
+            "DailySensorSummaryService.aggregate_day"
+        )
+
+        with patch(command_path, side_effect=OperationalError("DB一時エラー")):
+            with self.assertRaises(CommandError):
+                call_command("process_daily_sensor_aggregation_tasks")
+
+        self.task.refresh_from_db()
+        self.assertEqual(
+            self.task.status,
+            DailySensorAggregationTask.Status.FAILED,
+        )
+        self.assertEqual(self.task.attempt_count, 1)
+        self.assertIn("DB一時エラー", self.task.last_error)
+
+        call_command("process_daily_sensor_aggregation_tasks")
+
+        self.task.refresh_from_db()
+        self.assertEqual(
+            self.task.status,
+            DailySensorAggregationTask.Status.COMPLETED,
+        )
+        self.assertEqual(self.task.attempt_count, 2)
+        self.assertEqual(self.task.last_error, "")
