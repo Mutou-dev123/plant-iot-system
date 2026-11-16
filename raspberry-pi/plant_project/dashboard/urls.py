@@ -3,6 +3,7 @@ from django.urls import path
 from .views import dashboard
 from .views import plants
 from .views import devices
+from .views import daily_summaries
 from .views import api
 
 urlpatterns = [
@@ -109,6 +110,17 @@ urlpatterns = [
         "devices/<int:device_id>/delete/",
         devices.device_delete,
         name="device_delete",
+    ),
+
+
+    # ==========================================
+    # 日別集計
+    # ==========================================
+
+    path(
+        "daily-summaries/",
+        daily_summaries.daily_summary_list,
+        name="daily_summary_list",
     ),
 
 

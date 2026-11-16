@@ -4,6 +4,17 @@ from dashboard.models import Plant, Device
 
 
 # ==========================================
+# 日別集計管理フォーム
+# ==========================================
+class DailySummaryFilterForm(forms.Form):
+    summary_date = forms.DateField(
+        required=False,
+        label="集計日",
+        widget=forms.DateInput(attrs={"type": "date"}),
+    )
+
+
+# ==========================================
 # 植物管理フォーム
 # ==========================================
 class PlantForm(forms.ModelForm):

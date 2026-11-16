@@ -80,3 +80,38 @@
 
     text-align: center;
 }
+
+.summary-filter {
+    display: flex;
+    align-items: flex-end;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-bottom: 24px;
+}
+
+.summary-filter-field {
+    min-width: 220px;
+}
+
+.summary-filter-field label {
+    display: block;
+    margin-bottom: 8px;
+}
+
+.summary-filter-field input {
+    width: auto;
+    min-width: 220px;
+}
+
+.summary-table-wrapper {
+    width: 100%;
+    overflow-x: auto;
+}
+
+.summary-table-wrapper .list-table {
+    min-width: 1200px;
+}
+
+.summary-table-wrapper .list-table th {
+    white-space: nowrap;
+}
