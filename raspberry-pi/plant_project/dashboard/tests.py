@@ -8,7 +8,7 @@ from django.utils import timezone
 from django.db import IntegrityError, transaction
 from django.db.models.deletion import ProtectedError
 
-from dashboard.models import Device, Plant, SensorLog, DailySensorSummary
+from dashboard.models import Device, Plant, SensorLog, DailySensorSummary, DailySensorAggregationTask
 from dashboard.services.sensor_service import SensorService
 from dashboard.services.daily_sensor_summary_service import DailySensorSummaryService
 from dashboard.forms import DeviceForm
@@ -308,3 +308,72 @@ class DailySensorSummaryServiceTests(TestCase):
 
         self.assertIsNone(summary)
         self.assertFalse(DailySensorSummary.objects.exists())
+
+
+class DailySensorAggregationTaskModelTests(TestCase):
+    def setUp(self):
+        self.plant = Plant.objects.create(
+            custom_name="集計タスク用植物",
+        )
+        self.device = Device.objects.create(
+            device_name="aggregation-task-test-device",
+            plant=self.plant,
+        )
+        self.summary_date = date(2026, 11, 16)
+
+    def _create_task(self, **kwargs):
+        return DailySensorAggregationTask.objects.create(
+            device=self.device,
+            summary_date=self.summary_date,
+            **kwargs,
+        )
+
+    def test_new_task_starts_as_pending(self):
+        task = self._create_task(plant=self.plant)
+
+        self.assertEqual(
+            task.status,
+            DailySensorAggregationTask.Status.PENDING,
+        )
+        self.assertEqual(task.attempt_count, 0)
+        self.assertIsNone(task.last_attempt_at)
+        self.assertEqual(task.last_error, "")
+
+    def test_prevents_duplicate_task_for_same_device_plant_and_date(self):
+        self._create_task(plant=self.plant)
+
+        with self.assertRaises(IntegrityError):
+            with transaction.atomic():
+                self._create_task(plant=self.plant)
+
+    def test_prevents_duplicate_unassigned_task_for_same_device_and_date(self):
+        self._create_task()
+
+        with self.assertRaises(IntegrityError):
+            with transaction.atomic():
+                self._create_task()
+
+    def test_allows_unassigned_tasks_for_different_devices(self):
+        self._create_task()
+
+        another_device = Device.objects.create(
+            device_name="another-aggregation-task-device",
+        )
+        DailySensorAggregationTask.objects.create(
+            device=another_device,
+            summary_date=self.summary_date,
+        )
+
+        self.assertEqual(
+            DailySensorAggregationTask.objects.count(),
+            2,
+        )
+
+    def test_protects_device_and_plant_with_task_from_deletion(self):
+        self._create_task(plant=self.plant)
+
+        with self.assertRaises(ProtectedError):
+            self.device.delete()
+
+        with self.assertRaises(ProtectedError):
+            self.plant.delete()
