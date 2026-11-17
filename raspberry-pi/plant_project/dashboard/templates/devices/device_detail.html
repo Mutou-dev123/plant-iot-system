@@ -105,6 +105,7 @@
                 href="{% url 'device_edit' device.id %}"
                 class="button button-edit"
             >
+                <i data-lucide="pencil" aria-hidden="true"></i>
                 編集
             </a>
         
@@ -115,13 +116,12 @@
                 onsubmit="return confirm('「{{ device.device_name }}」を削除しますか？');"
                 class="inline-form"
             >
-        
                 {% csrf_token %}
-        
                 <button
                     type="submit"
                     class="button button-delete"
                 >
+                    <i data-lucide="trash-2" aria-hidden="true"></i>
                     削除
                 </button>
         
