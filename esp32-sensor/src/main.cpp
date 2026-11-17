@@ -29,9 +29,17 @@ bool isDhtError = false;
 bool isSoilError = false;
 bool isLightError = false;
 
+
 // 現在の設定に従ってセンサーを取得し、サーバーへ送信する
 void collectAndSendSensorData()
 {
+    // 送信前にWi-Fi接続状態を確認する
+    if (!ensureWiFiConnected(millis()))
+    {
+        Serial.println("[WiFi] Not connected. Skip sending sensor data.");
+        return;
+    }
+
     const DeviceConfig& config = getCurrentDeviceConfig();
 
     SensorData data;
@@ -151,6 +159,9 @@ void loop()
 {
 
     unsigned long currentMillis = millis(); // 現在のストップウォッチの時間を取得
+
+    // Wi-Fi切断時は一定間隔で再接続を試みる
+    ensureWiFiConnected(currentMillis);
     
     // 10秒ごとにRaspberry Piの設定変更を確認する
     if (shouldCheckDeviceConfig(currentMillis))

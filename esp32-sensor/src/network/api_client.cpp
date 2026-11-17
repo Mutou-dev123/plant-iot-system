@@ -86,7 +86,16 @@ int sendSensorData(const SensorData& data)
     HTTPClient http;
     int nextInterval = 300;
 
-    http.begin(API_URL);
+    if (!http.begin(API_URL))
+    {
+        Serial.println("[HTTP] Failed to begin connection.");
+        return -1;
+    }
+
+    // 通信不能時に長時間停止しないようにする
+    http.setConnectTimeout(3000);
+    http.setTimeout(5000);
+
     http.addHeader("Content-Type", "application/json");
 
     Serial.println("====== HTTP REQUEST ======");
@@ -99,7 +108,17 @@ int sendSensorData(const SensorData& data)
     int httpCode = http.POST(json);
 
     // HTTPレスポンスを取得
-    String response = http.getString();
+    String response;
+    
+    if (httpCode > 0)
+    {
+        response = http.getString();
+    }
+    else
+    {
+        Serial.print("[CONFIG] POST failed: ");
+        Serial.println(http.errorToString(httpCode));
+    }
 
     //========================
     // HTTP結果・デバッグ情報
@@ -183,6 +202,10 @@ bool fetchDeviceConfig(DeviceConfig& config)
         return false;
     }
 
+    // 通信不能時に長時間停止しないようにする
+    http.setConnectTimeout(3000);
+    http.setTimeout(5000);
+
     int httpCode = http.GET();
 
     if (httpCode != 200)
@@ -194,7 +217,18 @@ bool fetchDeviceConfig(DeviceConfig& config)
         return false;
     }
 
-    String response = http.getString();
+    String response;
+
+    if (httpCode > 0)
+    {
+        response = http.getString();
+    }
+    else
+    {
+        Serial.print("[CONFIG] POST failed: ");
+        Serial.println(http.errorToString(httpCode));
+    }
+
     http.end();
 
     JsonDocument doc;
@@ -277,13 +311,28 @@ bool reportAppliedDeviceConfig(int configVersion)
         return false;
     }
 
+    // 通信不能時に長時間停止しないようにする
+    http.setConnectTimeout(3000);
+    http.setTimeout(5000);
+
     http.addHeader("Content-Type", "application/json");
 
     Serial.println("[CONFIG] Reporting applied configuration.");
     Serial.println(json);
 
     int httpCode = http.POST(json);
-    String response = http.getString();
+
+    String response;
+
+    if (httpCode > 0)
+    {
+        response = http.getString();
+    }
+    else
+    {
+        Serial.print("[CONFIG] POST failed: ");
+        Serial.println(http.errorToString(httpCode));
+    }
 
     http.end();
 

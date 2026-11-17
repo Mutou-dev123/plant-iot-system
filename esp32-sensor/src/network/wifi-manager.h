@@ -12,4 +12,6 @@
 
 void connectWiFi();
 
+bool ensureWiFiConnected(unsigned long currentMillis);
+
 #endif
