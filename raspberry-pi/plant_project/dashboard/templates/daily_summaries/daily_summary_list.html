@@ -1,0 +1,88 @@
+{% extends "base.html" %}
+
+{% load static %}
+
+{% block title %}日別集計{% endblock %}
+
+{% block css %}
+<link rel="stylesheet" href="{% static 'css/list.css' %}">
+{% endblock %}
+
+{% block content %}
+
+<div class="list-header">
+    <h1>日別集計</h1>
+</div>
+
+<form method="get" action="{% url 'daily_summary_list' %}" class="summary-filter">
+    <div class="summary-filter-field">
+        <label for="id_summary_date">{{ form.summary_date.label }}</label>
+        {{ form.summary_date }}
+
+        {% if form.summary_date.errors %}
+            <ul role="alert">
+                {% for error in form.summary_date.errors %}
+                    <li>{{ error }}</li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+    </div>
+
+    <button type="submit" class="button">表示</button>
+</form>
+
+{% if not form.summary_date.errors %}
+    {% if selected_date %}
+        <h2>{{ selected_date|date:"Y年n月j日" }} の集計結果</h2>
+    {% endif %}
+
+    <div class="summary-table-wrapper">
+        <table class="list-table">
+            <thead>
+                <tr>
+                    <th>デバイス</th>
+                    <th>植物</th>
+                    <th>気温 平均（℃）</th>
+                    <th>気温 最小（℃）</th>
+                    <th>気温 最大（℃）</th>
+                    <th>湿度 平均（%）</th>
+                    <th>湿度 最小（%）</th>
+                    <th>湿度 最大（%）</th>
+                    <th>土壌水分 平均（%）</th>
+                    <th>土壌水分 最小（%）</th>
+                    <th>土壌水分 最大（%）</th>
+                    <th>光量 平均</th>
+                    <th>光量 最小</th>
+                    <th>光量 最大</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for summary in summaries %}
+                    <tr>
+                        <td>{{ summary.device.device_name }}</td>
+                        <td>{{ summary.plant.custom_name|default:"植物未設定" }}</td>
+                        <td>{{ summary.temperature_avg|floatformat:1|default:"—" }}</td>
+                        <td>{{ summary.temperature_min|floatformat:1|default:"—" }}</td>
+                        <td>{{ summary.temperature_max|floatformat:1|default:"—" }}</td>
+                        <td>{{ summary.humidity_avg|floatformat:1|default:"—" }}</td>
+                        <td>{{ summary.humidity_min|floatformat:1|default:"—" }}</td>
+                        <td>{{ summary.humidity_max|floatformat:1|default:"—" }}</td>
+                        <td>{{ summary.moisture_avg|floatformat:1|default:"—" }}</td>
+                        <td>{{ summary.moisture_min|floatformat:1|default:"—" }}</td>
+                        <td>{{ summary.moisture_max|floatformat:1|default:"—" }}</td>
+                        <td>{{ summary.light_avg|floatformat:1|default:"—" }}</td>
+                        <td>{{ summary.light_min|floatformat:1|default:"—" }}</td>
+                        <td>{{ summary.light_max|floatformat:1|default:"—" }}</td>
+                    </tr>
+                {% empty %}
+                    <tr>
+                        <td colspan="14">この日の集計データはありません。</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+{% endif %}
+
+{% endblock %}

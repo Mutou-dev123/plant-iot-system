@@ -1,11 +1,18 @@
 import json
 
+from datetime import date, datetime, timezone as datetime_timezone
+
+from django.core.management import call_command, CommandError
 from django.test import TestCase
 from django.urls import reverse
 from django.utils import timezone
+from django.db import IntegrityError, transaction, OperationalError
+from django.db.models.deletion import ProtectedError
+from unittest.mock import patch
 
-from dashboard.models import Device, Plant, SensorLog
+from dashboard.models import Device, Plant, SensorLog, DailySensorSummary, DailySensorAggregationTask
 from dashboard.services.sensor_service import SensorService
+from dashboard.services.daily_sensor_summary_service import DailySensorSummaryService
 from dashboard.forms import DeviceForm
 
 
@@ -17,13 +24,13 @@ class SensorLogPlantTests(TestCase):
             plant=plant,
         )
 
-    def _receive_sensor_data(self):
+    def _receive_sensor_data(self, timestamp=1):
         payload = {
             "deviceName": "test-device",
             "macAddress": "AA:BB:CC:DD:EE:FF",
             "ipAddress": "192.168.1.10",
             "firmwareVersion": "test",
-            "timestamp": 1,
+            "timestamp": timestamp,
             "dhtEnabled": False,
             "soilEnabled": False,
             "lightEnabled": False,
@@ -67,6 +74,55 @@ class SensorLogPlantTests(TestCase):
             [log.plant_id for log in logs],
             [original_plant.id, new_plant.id],
         )
+
+    def test_receive_creates_pending_task_for_japan_date(self):
+        plant = Plant.objects.create(custom_name="タスク対象植物")
+        device = self._create_device(plant=plant)
+
+        # 2026-11-12 15:00 UTC は、日本時間の11月13日 00:00
+        timestamp = int(
+            datetime(
+                2026, 11, 12, 15, 0,
+                tzinfo=datetime_timezone.utc,
+            ).timestamp()
+        )
+        self._receive_sensor_data(timestamp=timestamp)
+
+        task = DailySensorAggregationTask.objects.get()
+        self.assertEqual(task.device, device)
+        self.assertEqual(task.plant, plant)
+        self.assertEqual(task.summary_date, date(2026, 11, 13))
+        self.assertEqual(task.status, DailySensorAggregationTask.Status.PENDING)
+        self.assertEqual(SensorLog.objects.count(), 1)
+
+    def test_receive_creates_unassigned_task_when_device_has_no_plant(self):
+        self._create_device()
+
+        self._receive_sensor_data()
+
+        task = DailySensorAggregationTask.objects.get()
+        self.assertIsNone(task.plant)
+        self.assertEqual(task.status, DailySensorAggregationTask.Status.PENDING)
+
+    def test_receive_requeues_existing_task_without_creating_duplicate(self):
+        plant = Plant.objects.create(custom_name="再試行対象植物")
+        self._create_device(plant=plant)
+        self._receive_sensor_data()
+
+        task=DailySensorAggregationTask.objects.get()
+        task.status = DailySensorAggregationTask.Status.FAILED
+        task.attempt_count = 2
+        task.last_error = "一時的なエラー"
+        task.save(update_fields=["status", "attempt_count", "last_error"])
+
+        self._receive_sensor_data()
+
+        task.refresh_from_db()
+        self.assertEqual(DailySensorAggregationTask.objects.count(), 1)
+        self.assertEqual(task.status, DailySensorAggregationTask.Status.PENDING)
+        self.assertEqual(task.last_error, "")
+        self.assertEqual(task.attempt_count, 2)
+        self.assertEqual(SensorLog.objects.count(), 2)
 
 
 class PlantArchiveTests(TestCase):
@@ -144,3 +200,305 @@ class PlantArchiveTests(TestCase):
             self.plant,
             form.fields["plant"].queryset,
         )
+
+
+class DailySensorSummaryModelTests(TestCase):
+    def setUp(self):
+        self.plant = Plant.objects.create(custom_name="集計テスト植物")
+        self.device = Device.objects.create(
+            device_name="summary-test-device",
+            plant=self.plant,
+        )
+        self.summary_date = date(2026, 11, 13)
+
+    def _create_summary(self, **kwargs):
+        return DailySensorSummary.objects.create(
+            device=self.device,
+            summary_date=self.summary_date,
+            **kwargs,
+        )
+
+    def test_prevents_duplicate_summary_for_same_device_plant_and_date(self):
+        self._create_summary(plant=self.plant)
+
+        with self.assertRaises(IntegrityError):
+            with transaction.atomic():
+                self._create_summary(plant=self.plant)
+
+    def test_prevents_duplicate_unassigned_summary_for_same_device_and_date(self):
+        self._create_summary()
+
+        with self.assertRaises(IntegrityError):
+            with transaction.atomic():
+                self._create_summary()
+
+    def test_allows_unassigned_summaries_for_different_devices(self):
+        self._create_summary()
+
+        other_device = Device.objects.create(
+            device_name="another-summary-device",
+        )
+        DailySensorSummary.objects.create(
+            device=other_device,
+            summary_date=self.summary_date,
+        )
+
+        self.assertEqual(DailySensorSummary.objects.count(), 2)
+
+    def test_protects_device_and_plant_with_summary_from_delection(self):
+        self._create_summary(plant=self.plant)
+
+        with self.assertRaises(ProtectedError):
+            self.device.delete()
+
+        with self.assertRaises(ProtectedError):
+            self.plant.delete()
+
+
+class DailySensorSummaryServiceTests(TestCase):
+    def setUp(self):
+        self.plant = Plant.objects.create(custom_name="集計対象植物")
+        self.device = Device.objects.create(
+            device_name="aggregation-test-device",
+            plant=self.plant,
+        )
+        self.summary_date = date(2026, 11, 13)
+
+    def test_aggregates_measurements_and_counts_non_null_values(self):
+        SensorLog.objects.create(
+            device=self.device,
+            plant=self.plant,
+            measured_at=timezone.make_aware(
+                timezone.datetime(2026, 11, 13, 1, 0),
+                timezone=timezone.get_current_timezone(),
+            ),
+            temperature=20.0,
+            humidity=50.0,
+            moisture=None,
+            light=100.0,
+        )
+        SensorLog.objects.create(
+            device=self.device,
+            plant=self.plant,
+            measured_at=timezone.make_aware(
+                timezone.datetime(2026, 11, 13, 2, 0),
+                timezone=timezone.get_current_timezone(),
+            ),
+            temperature=24.0,
+            humidity=None,
+            moisture=60.0,
+            light=200.0,
+        )
+
+        summary = DailySensorSummaryService.aggregate_day(
+            self.device,
+            self.plant,
+            self.summary_date,
+        )
+
+        self.assertEqual(summary.log_count, 2)
+
+        self.assertAlmostEqual(summary.temperature_avg, 22.0)
+        self.assertEqual(summary.temperature_min, 20.0)
+        self.assertEqual(summary.temperature_max, 24.0)
+        self.assertEqual(summary.temperature_count, 2)
+
+        self.assertEqual(summary.humidity_avg, 50.0)
+        self.assertEqual(summary.humidity_count, 1)
+
+        self.assertEqual(summary.moisture_avg, 60.0)
+        self.assertEqual(summary.moisture_count, 1)
+
+        self.assertAlmostEqual(summary.light_avg, 150.0)
+        self.assertEqual(summary.light_count, 2)
+
+    def test_recalculating_updates_existing_summary(self):
+        SensorLog.objects.create(
+            device=self.device,
+            plant=self.plant,
+            measured_at=timezone.make_aware(
+                timezone.datetime(2026, 11, 13, 1, 0),
+                timezone=timezone.get_current_timezone(),
+            ),
+            temperature=20.0,
+        )
+
+        first_summary = DailySensorSummaryService.aggregate_day(
+            self.device,
+            self.plant,
+            self.summary_date,
+        )
+
+        SensorLog.objects.create(
+            device=self.device,
+            plant=self.plant,
+            measured_at=timezone.make_aware(
+                timezone.datetime(2026, 11, 13, 2, 0),
+                timezone=timezone.get_current_timezone(),
+            ),
+            temperature=24.0,
+        )
+
+        second_summary = DailySensorSummaryService.aggregate_day(
+            self.device,
+            self.plant,
+            self.summary_date,
+        )
+
+        self.assertEqual(first_summary.pk, second_summary.pk)
+        self.assertEqual(DailySensorSummary.objects.count(), 1)
+        self.assertAlmostEqual(second_summary.temperature_avg, 22.0)
+        self.assertEqual(second_summary.temperature_count, 2)
+
+    def test_returns_none_when_day_has_no_logs(self):
+        summary = DailySensorSummaryService.aggregate_day(
+            self.device,
+            self.plant,
+            self.summary_date,
+        )
+
+        self.assertIsNone(summary)
+        self.assertFalse(DailySensorSummary.objects.exists())
+
+
+class DailySensorAggregationTaskModelTests(TestCase):
+    def setUp(self):
+        self.plant = Plant.objects.create(
+            custom_name="集計タスク用植物",
+        )
+        self.device = Device.objects.create(
+            device_name="aggregation-task-test-device",
+            plant=self.plant,
+        )
+        self.summary_date = date(2026, 11, 16)
+
+    def _create_task(self, **kwargs):
+        return DailySensorAggregationTask.objects.create(
+            device=self.device,
+            summary_date=self.summary_date,
+            **kwargs,
+        )
+
+    def test_new_task_starts_as_pending(self):
+        task = self._create_task(plant=self.plant)
+
+        self.assertEqual(
+            task.status,
+            DailySensorAggregationTask.Status.PENDING,
+        )
+        self.assertEqual(task.attempt_count, 0)
+        self.assertIsNone(task.last_attempt_at)
+        self.assertEqual(task.last_error, "")
+
+    def test_prevents_duplicate_task_for_same_device_plant_and_date(self):
+        self._create_task(plant=self.plant)
+
+        with self.assertRaises(IntegrityError):
+            with transaction.atomic():
+                self._create_task(plant=self.plant)
+
+    def test_prevents_duplicate_unassigned_task_for_same_device_and_date(self):
+        self._create_task()
+
+        with self.assertRaises(IntegrityError):
+            with transaction.atomic():
+                self._create_task()
+
+    def test_allows_unassigned_tasks_for_different_devices(self):
+        self._create_task()
+
+        another_device = Device.objects.create(
+            device_name="another-aggregation-task-device",
+        )
+        DailySensorAggregationTask.objects.create(
+            device=another_device,
+            summary_date=self.summary_date,
+        )
+
+        self.assertEqual(
+            DailySensorAggregationTask.objects.count(),
+            2,
+        )
+
+    def test_protects_device_and_plant_with_task_from_deletion(self):
+        self._create_task(plant=self.plant)
+
+        with self.assertRaises(ProtectedError):
+            self.device.delete()
+
+        with self.assertRaises(ProtectedError):
+            self.plant.delete()
+
+
+class ProcessDailySensorAggregationTasksCommandTests(TestCase):
+    def setUp(self):
+        self.plant = Plant.objects.create(custom_name="コマンドテスト植物")
+        self.device = Device.objects.create(
+            device_name="command-test_device",
+            plant=self.plant,
+        )
+        self.summary_date = date(2026, 11, 13)
+
+        measured_at = timezone.make_aware(
+            timezone.datetime(2026, 11, 13, 12, 0),
+            timezone=timezone.get_current_timezone(),
+        )
+        SensorLog.objects.create(
+            device=self.device,
+            plant=self.plant,
+            measured_at=measured_at,
+            temperature=22.0,
+        )
+        self.task = DailySensorAggregationTask.objects.create(
+            device=self.device,
+            plant=self.plant,
+            summary_date=self.summary_date,
+        )
+
+    def test_command_aggregates_and_marks_task_completed(self):
+        call_command("process_daily_sensor_aggregation_tasks")
+
+        self.task.refresh_from_db()
+        summary = DailySensorSummary.objects.get(
+            device=self.device,
+            plant=self.plant,
+            summary_date=self.summary_date,
+        )
+
+        self.assertEqual(
+            self.task.status,
+            DailySensorAggregationTask.Status.COMPLETED,
+        )
+        self.assertEqual(self.task.attempt_count, 1)
+        self.assertIsNotNone(self.task.last_attempt_at)
+        self.assertEqual(self.task.last_error, "")
+        self.assertEqual(summary.temperature_avg, 22.0)
+
+    def test_failed_task_is_recorded_and_retried_on_next_run(self):
+        command_path = (
+            "dashboard.management.commands."
+            "process_daily_sensor_aggregation_tasks."
+            "DailySensorSummaryService.aggregate_day"
+        )
+
+        with patch(command_path, side_effect=OperationalError("DB一時エラー")):
+            with self.assertRaises(CommandError):
+                call_command("process_daily_sensor_aggregation_tasks")
+
+        self.task.refresh_from_db()
+        self.assertEqual(
+            self.task.status,
+            DailySensorAggregationTask.Status.FAILED,
+        )
+        self.assertEqual(self.task.attempt_count, 1)
+        self.assertIn("DB一時エラー", self.task.last_error)
+
+        call_command("process_daily_sensor_aggregation_tasks")
+
+        self.task.refresh_from_db()
+        self.assertEqual(
+            self.task.status,
+            DailySensorAggregationTask.Status.COMPLETED,
+        )
+        self.assertEqual(self.task.attempt_count, 2)
+        self.assertEqual(self.task.last_error, "")

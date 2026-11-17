@@ -2,7 +2,7 @@ from django.db import models
 from django.utils import timezone
 
 # ==============================
-# 4. センサーログ (SensorLog)
+# センサーログ (SensorLog)
 # ==============================
 # 毎回の計測データ。計測デバイスと、その時点の観測対象植物を記録する。
 class SensorLog(models.Model):

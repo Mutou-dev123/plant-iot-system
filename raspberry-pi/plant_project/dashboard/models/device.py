@@ -3,7 +3,7 @@ from django.utils import timezone
 import uuid
 
 # ==============================
-# 3. デバイス設定 (Device)
+# デバイス設定 (Device)
 # ==============================
 # ESP32を一機ごとの設定を管理する。
 class Device(models.Model):
