@@ -204,3 +204,18 @@ header h2,
     width: 24px;
     height: 24px;
 }
+
+.button,
+.button-primary {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+}
+
+.button .lucide,
+.button-primary .lucide {
+    width: 16px;
+    height: 16px;
+    stroke-width: 2;
+}

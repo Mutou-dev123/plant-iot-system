@@ -1,7 +1,6 @@
 /*==============================
-  ダッシュボード
+    ダッシュボード
 ==============================*/
-
 .dashboard {
 
     display: flex;
@@ -10,10 +9,10 @@
 
 }
 
-/*==============================
-  グラフカード
-==============================*/
 
+/*==============================
+    グラフカード
+==============================*/
 .chart-container {
 
     max-width: 1100px;
@@ -30,10 +29,10 @@
 
 }
 
-/*==============================
-  グラフタイトル
-==============================*/
 
+/*==============================
+    グラフタイトル
+==============================*/
 .chart-title {
 
     margin: 0 0 20px;
@@ -44,10 +43,10 @@
 
 }
 
-/*==============================
-  グラフサイズ
-==============================*/
 
+/*==============================
+    グラフサイズ
+==============================*/
 .chart-wrapper {
 
     position: relative;
@@ -58,9 +57,8 @@
 
 
 /* ==============================
-   環境アラート
+    環境アラート
 ============================== */
-
 .alert-container {
     max-width: 1100px;
     width: 100%;
@@ -122,10 +120,10 @@
     line-height: 1.6;
 }
 
-/* ==============================
-   環境項目別ステータス
-============================== */
 
+/* ==============================
+    環境項目別ステータス
+============================== */
 .environment-status-list {
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -197,10 +195,10 @@
     line-height: 1.6;
 }
 
-/* ==============================
-   レスポンシブ対応
-============================== */
 
+/* ==============================
+    レスポンシブ対応
+============================== */
 @media (max-width: 800px) {
     .environment-status-list {
         grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -215,4 +213,54 @@
     .environment-status-list {
         grid-template-columns: 1fr;
     }
+}
+
+
+/* ==============================
+    グラフ凡例用
+============================== */
+.environment-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.environment-label .lucide {
+    width: 18px;
+    height: 18px;
+}
+
+.chart-legend {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 20px;
+    width: 100%;
+    margin-top: 16px;
+}
+
+.chart-legend-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.9rem;
+    font-weight: 600;
+}
+
+.chart-legend-item .lucide {
+    width: 17px;
+    height: 17px;
+}
+
+.chart-legend-temperature {
+    color: #dc3545;
+}
+
+.chart-legend-humidity {
+    color: #198754;
+}
+
+.chart-legend-moisture {
+    color: #0dcaf0;
 }

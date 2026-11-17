@@ -53,15 +53,8 @@ if (canvas && typeof timeLabels !== "undefined") {
             maintainAspectRatio: false,
             plugins: {
                 legend: {
-                    position: "top",
-                    labels: {
-                        color: "#333333",
-                        boxWidth: 20,
-                        padding: 20,
-                        font: {
-                            size: 14
-                        }
-                    }
+                    // Lucideを使ったHTML凡例を表示するため、Canvas内の凡例は非表示にする
+                    display: false
                 }
             },
             scales: {

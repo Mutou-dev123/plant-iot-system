@@ -76,7 +76,18 @@
             {% for item in environment_statuses %}
                 <div class="environment-status status-{{ item.status }}">
                     <div class="environment-status-heading">
-                        <strong>{{ item.label }}</strong>
+
+                        <strong class="environment-label">
+                            {% if forloop.counter == 1 %}
+                                <i data-lucide="thermometer" aria-hidden="true"></i>
+                            {% elif forloop.counter == 2 %}
+                                <i data-lucide="droplets" aria-hidden="true"></i>
+                            {% else %}
+                                <i data-lucide="sprout" aria-hidden="true"></i>
+                            {% endif %}
+
+                            {{ item.label }}
+                        </strong>
 
                         {% if item.status == "warning" %}
                             <span class="status-label">要注意</span>
@@ -116,6 +127,23 @@
 
         <canvas id="envChart"></canvas>
 
+    </div>
+    
+    <div class="chart-legend" aria-label="グラフの凡例">
+        <div class="chart-legend-item chart-legend-temperature">
+            <i data-lucide="thermometer" aria-hidden="true"></i>
+            <span>温度</span>
+        </div>
+
+        <div class="chart-legend-item chart-legend-humidity">
+            <i data-lucide="droplets" aria-hidden="true"></i>
+            <span>湿度</span>
+        </div>
+
+        <div class="chart-legend-item chart-legend-moisture">
+            <i data-lucide="sprout" aria-hidden="true"></i>
+            <span>土壌水分</span>
+        </div>
     </div>
     
 </div>
