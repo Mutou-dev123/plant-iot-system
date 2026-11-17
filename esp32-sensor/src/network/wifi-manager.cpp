@@ -9,12 +9,24 @@
 
 #include "../config/config.h"
 
+namespace
+{
+    // 再接続を試す間隔。毎ループ接続処理を実行しないようにする
+    constexpr unsigned long WIFI_RECONNECT_INTERVAL_MS = 30000;
+
+    unsigned long lastReconnectAttempt = 0;
+}
+
+
 //==============================
 // Wi-Fi接続
 //==============================
 
 void connectWiFi()
 {
+    WiFi.mode(WIFI_STA);
+    WiFi.setAutoReconnect(true);
+
     for (int i = 0; i < WIFI_COUNT; i++)
     {
         Serial.println();
@@ -58,4 +70,29 @@ void connectWiFi()
 
     Serial.println();
     Serial.println("No available Wi-Fi found.");
+}
+
+bool ensureWiFiConnected(unsigned long currentMillis)
+{
+    // 接続中なら何もしない
+    if (WiFi.status() == WL_CONNECTED)
+    {
+        return true;
+    }
+
+    // 再接続処理を短時間に繰り返さない
+    if (
+        currentMillis - lastReconnectAttempt <
+        WIFI_RECONNECT_INTERVAL_MS
+    )
+    {
+        return false;
+    }
+
+    lastReconnectAttempt = currentMillis;
+
+    Serial.println("[WiFi] Connection lost. Reconnecting...");
+    connectWiFi();
+
+    return WiFi.status() == WL_CONNECTED;
 }
