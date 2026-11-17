@@ -16,6 +16,9 @@
     <link rel="stylesheet" href="{% static 'css/base.css' %}">
     <link rel="stylesheet" href="{% static 'css/menu.css' %}">
 
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@0.468.0"></script>
+
     <!-- ページごとのCSS -->
     {% block css %}
     {% endblock %}
@@ -25,11 +28,14 @@
 
     <header>
 
-        <button id="menu-button">
-            ☰
+        <button id="menu-button" type="button" aria-label="メニューを開く">
+            <i data-lucide="menu" aria-hidden="true"></i>
         </button>
 
-        <h2>🌿 ObserLeaf</h2>
+        <h2>
+            <i data-lucide="leaf" aria-hidden="true"></i>
+            ObserLeaf
+        </h2>
 
         <div id="realtime-clock">
             --:--:--
@@ -44,25 +50,29 @@
 
             <li>
                 <a href="{% url 'dashboard' %}">
-                    📊 ダッシュボード
+                    <i data-lucide="layout-dashboard" aria-hidden="true"></i>
+                    ダッシュボード
                 </a>
             </li>
 
             <li>
                 <a href="{% url 'daily_summary_list' %}">
-                    📅 日別集計
+                    <i data-lucide="calendar-days" aria-hidden="true"></i>
+                    日別サマリー
                 </a>
             </li>
 
             <li>
                 <a href="{% url 'plant_list' %}">
-                    🌱 植物一覧
+                    <i data-lucide="sprout" aria-hidden="true"></i>
+                    植物一覧
                 </a>
             </li>
 
             <li>
                 <a href="{% url 'device_list' %}">
-                    📡 デバイス一覧
+                    <i data-lucide="cpu" aria-hidden="true"></i>
+                    デバイス一覧
                 </a>
             </li>
         </ul>
@@ -78,6 +88,11 @@
     <!-- 共通JS -->
     <script src="{% static 'js/clock.js' %}"></script>
     <script src="{% static 'js/menu.js' %}"></script>
+
+    <script>
+        // data-lucide属性をSVGアイコンへ変換する
+        lucide.createIcons();
+    </script>
 
     <!-- ページごとのJS -->
     {% block js %}
