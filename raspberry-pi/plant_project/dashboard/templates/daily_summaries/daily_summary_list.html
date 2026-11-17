@@ -25,12 +25,13 @@
                     <li>{{ error }}</li>
                 {% endfor %}
             </ul>
-        {% else %}
+        {% endif %}
     </div>
 
     <button type="submit" class="button">表示</button>
 </form>
 
+{% if not form.summary_date.errors %}
     {% if selected_date %}
         <h2>{{ selected_date|date:"Y年n月j日" }} の集計結果</h2>
     {% endif %}
