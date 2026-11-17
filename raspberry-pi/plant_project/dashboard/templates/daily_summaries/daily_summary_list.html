@@ -2,7 +2,7 @@
 
 {% load static %}
 
-{% block title %}日別集計{% endblock %}
+{% block title %}日別サマリー{% endblock %}
 
 {% block css %}
 <link rel="stylesheet" href="{% static 'css/list.css' %}">
@@ -11,7 +11,10 @@
 {% block content %}
 
 <div class="list-header">
-    <h1>日別集計</h1>
+    <h1>
+        <i data-lucide="calendar-days" aria-hidden="true"></i>
+        日別サマリー
+    </h1>
 </div>
 
 <form method="get" action="{% url 'daily_summary_list' %}" class="summary-filter">
