@@ -1,53 +1,49 @@
-# ==========================================
-# 日別集計ビュー
-# ==========================================
-
 from django.shortcuts import render
-from django.utils import timezone
 
-from dashboard.forms import DailySummaryFilterForm
-from dashboard.models import DailySensorSummary
+from dashboard.forms import SensorTrendFilterForm
+from dashboard.models import Device, Plant
+from dashboard.sensor_trend_periods import DEFAULT_TREND_PERIOD
+from dashboard.services.sensor_trend_service import METRICS, get_sensor_trends
 
 
 def daily_summary_list(request):
-    latest_date = (
-        DailySensorSummary.objects
-        .order_by("-summary_date")
-        .values_list("summary_date", flat=True)
-        .first()
-    )
-    default_date = latest_date or timezone.localdate()
-
-    form = DailySummaryFilterForm(
-        request.GET or None,
-        initial={"summary_date": default_date},
+    template_name = "daily_summaries/daily_summary_list.html"
+    form = SensorTrendFilterForm(
+        {"period": request.GET.get("period", DEFAULT_TREND_PERIOD)}
     )
 
-    if form.is_bound:
-        if form.is_valid():
-            selected_date = form.cleaned_data["summary_date"] or default_date
-        else:
+    if not form.is_valid():
+        return render(request, template_name, {"form": form}, status=400)
 
-            selected_date = None
-    else:
-        selected_date = default_date
+    trends = get_sensor_trends(form.cleaned_data["period"])
+    devices = Device.objects.order_by("device_name")
 
-    summaries = DailySensorSummary.objects.none()
+    # 選択期間に記録された植物名をまとめて取得する。
+    plant_ids = {
+        series["plant_id"]
+        for series in trends["series"]
+        if series["plant_id"] is not None
+    }
+    plant_names = dict(
+        Plant.objects.filter(pk__in=plant_ids).values_list("pk", "custom_name")
+    )
 
-    if selected_date is not None:
-        summaries = (
-            DailySensorSummary.objects
-            .filter(summary_date=selected_date)
-            .select_related("device", "plant")
-            .order_by("device__device_name", "plant__custom_name")
-        )
+    devices_with_data = set()
+    for series in trends["series"]:
+        series["plant_name"] = plant_names.get(series["plant_id"], "植物未設定")
+
+        # 0も有効な計測値として扱う。
+        if any(value is not None for metric in METRICS for value in series[metric]):
+            devices_with_data.add(series["device_id"])
+    
 
     return render(
         request,
-        "daily_summaries/daily_summary_list.html",
+        template_name,
         {
             "form": form,
-            "selected_date": selected_date,
-            "summaries": summaries,
+            "devices": devices,
+            "devices_with_data": devices_with_data,
+            "trends": trends,
         },
     )

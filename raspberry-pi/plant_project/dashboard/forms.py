@@ -1,16 +1,16 @@
 from django import forms
 
 from dashboard.models import Plant, Device
+from dashboard.sensor_trend_periods import TREND_PERIOD_CHOICES
 
 
 # ==========================================
-# 日別集計管理フォーム
+# センサー推移の期間選択フォーム
 # ==========================================
-class DailySummaryFilterForm(forms.Form):
-    summary_date = forms.DateField(
-        required=False,
-        label="集計日",
-        widget=forms.DateInput(attrs={"type": "date"}),
+class SensorTrendFilterForm(forms.Form):
+    period = forms.ChoiceField(
+        label="表示期間",
+        choices=TREND_PERIOD_CHOICES,
     )
 
 
