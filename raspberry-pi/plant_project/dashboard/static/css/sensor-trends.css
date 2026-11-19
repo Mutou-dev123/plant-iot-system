@@ -1,0 +1,42 @@
+.sensor-trend-device {
+    margin-bottom: 32px;
+}
+
+.sensor-trend-plant-picker {
+    max-width: 320px;
+    margin-bottom: 16px;
+}
+
+.sensor-trend-plant-picker label {
+    display: block;
+    margin-bottom: 6px;
+}
+
+.sensor-trend-charts {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
+}
+
+.sensor-trend-card {
+    min-width: 0;
+    padding: 16px;
+    background: #fff;
+    border-radius: 12px;
+}
+
+.sensor-trend-card h3 {
+    margin: 0 0 12px;
+}
+
+/* Chart.jsはcanvas専用の親要素を基準にサイズを調整する。 */
+.sensor-trend-plot {
+    position: relative;
+    height: 240px;
+}
+
+@media (max-width: 720px) {
+    .sensor-trend-charts {
+        grid-template-columns: minmax(0, 1fr);
+    }
+}

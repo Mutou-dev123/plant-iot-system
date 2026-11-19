@@ -2,10 +2,11 @@
 
 {% load static %}
 
-{% block title %}日別サマリー{% endblock %}
+{% block title %}センサー推移{% endblock %}
 
 {% block css %}
 <link rel="stylesheet" href="{% static 'css/list.css' %}">
+<link rel="stylesheet" href="{% static 'css/sensor-trends.css' %}">
 {% endblock %}
 
 {% block content %}
@@ -13,79 +14,63 @@
 <div class="list-header">
     <h1>
         <i data-lucide="calendar-days" aria-hidden="true"></i>
-        日別サマリー
+        センサー推移
     </h1>
 </div>
 
 <form method="get" action="{% url 'daily_summary_list' %}" class="summary-filter">
     <div class="summary-filter-field">
-        <label for="id_summary_date">{{ form.summary_date.label }}</label>
-        {{ form.summary_date }}
-
-        {% if form.summary_date.errors %}
-            <ul role="alert">
-                {% for error in form.summary_date.errors %}
-                    <li>{{ error }}</li>
-                {% endfor %}
-            </ul>
-        {% endif %}
+        {{ form.period.label_tag }}
+        {{ form.period }}
+        {{ form.period.errors }}
     </div>
-
     <button type="submit" class="button">表示</button>
 </form>
 
-{% if not form.summary_date.errors %}
-    {% if selected_date %}
-        <h2>{{ selected_date|date:"Y年n月j日" }} の集計結果</h2>
+{% if trends %}
+
+    {% if devices_with_data %}
+        <p id="sensor-trend-chart-error" role="status" hidden>
+            グラフを読み込めませんでした。
+        </p>
+
+        <template id="sensor-trend-chart-card">
+            <article class="sensor-trend-card">
+                <h3></h3>
+                <p data-no-measurement hidden>この項目の計測値がありません。</p>
+                <div class="sensor-trend-plot">
+                    <canvas role="img"></canvas>
+                </div>
+            </article>
+        </template>
     {% endif %}
 
-    <div class="summary-table-wrapper">
-        <table class="list-table">
-            <thead>
-                <tr>
-                    <th>デバイス</th>
-                    <th>植物</th>
-                    <th>気温 平均（℃）</th>
-                    <th>気温 最小（℃）</th>
-                    <th>気温 最大（℃）</th>
-                    <th>湿度 平均（%）</th>
-                    <th>湿度 最小（%）</th>
-                    <th>湿度 最大（%）</th>
-                    <th>土壌水分 平均（%）</th>
-                    <th>土壌水分 最小（%）</th>
-                    <th>土壌水分 最大（%）</th>
-                    <th>光量 平均</th>
-                    <th>光量 最小</th>
-                    <th>光量 最大</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for summary in summaries %}
-                    <tr>
-                        <td>{{ summary.device.device_name }}</td>
-                        <td>{{ summary.plant.custom_name|default:"植物未設定" }}</td>
-                        <td>{{ summary.temperature_avg|floatformat:1|default:"—" }}</td>
-                        <td>{{ summary.temperature_min|floatformat:1|default:"—" }}</td>
-                        <td>{{ summary.temperature_max|floatformat:1|default:"—" }}</td>
-                        <td>{{ summary.humidity_avg|floatformat:1|default:"—" }}</td>
-                        <td>{{ summary.humidity_min|floatformat:1|default:"—" }}</td>
-                        <td>{{ summary.humidity_max|floatformat:1|default:"—" }}</td>
-                        <td>{{ summary.moisture_avg|floatformat:1|default:"—" }}</td>
-                        <td>{{ summary.moisture_min|floatformat:1|default:"—" }}</td>
-                        <td>{{ summary.moisture_max|floatformat:1|default:"—" }}</td>
-                        <td>{{ summary.light_avg|floatformat:1|default:"—" }}</td>
-                        <td>{{ summary.light_min|floatformat:1|default:"—" }}</td>
-                        <td>{{ summary.light_max|floatformat:1|default:"—" }}</td>
-                    </tr>
-                {% empty %}
-                    <tr>
-                        <td colspan="14">この日の集計データはありません。</td>
-                    </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    </div>
+    {% for device in devices %}
+        <section class="sensor-trend-device" aria-labelledby="device-trend-title-{{ device.pk }}">
+            <h2 id="device-trend-title-{{ device.pk }}">{{ device.device_name }}</h2>
 
+            {% if device.pk in devices_with_data %}
+                <p data-trend-plant-name hidden></p>
+                <div class="sensor-trend-plant-picker" data-trend-plant-picker hidden>
+                    <label for="trend-plant-{{ device.pk }}">観測対象の植物</label>
+                    <select id="trend-plant-{{ device.pk }}" data-trend-plant-select></select>
+                </div>
+                <div class="sensor-trend-charts" data-device-id="{{ device.pk }}"></div>
+            {% else %}
+                <p>この期間に計測データはありません。</p>
+            {% endif %}
+        </section>
+    {% empty %}
+        <p>登録済みのデバイスがありません。</p>
+    {% endfor %}
+
+    {{ trends|json_script:"sensor-trend-data" }}
 {% endif %}
+{% endblock %}
 
+{% block js %}
+    {% if devices_with_data %}
+        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+        <script src="{% static 'js/sensor-trends.js' %}"></script>
+    {% endif %}
 {% endblock %}
