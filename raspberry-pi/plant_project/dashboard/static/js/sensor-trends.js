@@ -18,7 +18,7 @@ function initializeSensorTrends() {
 
     // サーバから受け取った日本時間をそのまま表示する。
     const formatDate = (stamp) => stamp.slice(0, 16).replace("T", " ");
-    const includeTime = Date.parse(boundaries.at(-1)) - Data.parse(boundaries[0])
+    const includeTime = Date.parse(boundaries.at(-1)) - Date.parse(boundaries[0])
         <= 3 * 24 * 60 * 60 * 1000;
     const labels = boundaries.slice(0, -1).map((stamp) =>
         includeTime ? formatDate(stamp).slice(5) : stamp.slice(0, 10)
@@ -26,13 +26,13 @@ function initializeSensorTrends() {
 
     for (const grid of document.querySelectorAll(".sensor-trend-charts")) {
         const observations = series.filter((item) =>
-            item.device_id === Number(grid.dataset.deviceID)
+            item.device_id === Number(grid.dataset.deviceId)
             && metrics.some(({ key }) => item[key].some((value) => value !== null))
         );
         if (observations.length === 0) continue;
 
         const cards = metrics.map(({ key, title, color }) => {
-            const card = cardTemplate.contentEditable.cloneNode(true);
+            const card = cardTemplate.content.cloneNode(true);
             const canvas = card.querySelector("canvas");
             const empty = card.querySelector("[data-no-measurement]");
             const values = observations[0][key];
@@ -87,7 +87,7 @@ function initializeSensorTrends() {
         const section = grid.closest(".sensor-trend-device");
         if (observations.length === 1) {
             const plantName = section.querySelector("[data-trend-plant-name]");
-            plantName.textContent = observations[0].plantName;
+            plantName.textContent = observations[0].plant_name;
             plantName.hidden = false;
             continue;
         }
