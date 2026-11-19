@@ -10,7 +10,11 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/6.0/ref/settings/
 """
 
+import os
+
 from pathlib import Path
+
+from django.core.exceptions import ImproperlyConfigured
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -20,13 +24,19 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/6.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-zu=dm6)a)t+6p7d+brmhagofnnomrq7r$=-@t$ngv9(yymb#13'
+SECRET_KEY = os.environ.get("DJANGO_SECRET_KEY", "").strip()
+if not SECRET_KEY:
+    raise ImproperlyConfigured("DJANGO_SECRET_KEY must be set.")
 
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+# 開発時に明示的に指定した場合だけデバッグを有効にする
+DEBUG = os.environ.get("DJANGO_DEBUG", "0") == "1"
 
-# 許可するホスト
-ALLOWED_HOSTS = ["*"]
+# カンマ区切りで指定されたホスト名・IPアドレスを読み込む。
+ALLOWED_HOSTS = [
+    host.strip()
+    for host in os.environ.get("DJANGO_ALLOWED_HOSTS", "").split(",")
+    if host.strip()
+]
 
 
 # Application definition
