@@ -2,7 +2,7 @@ from django.shortcuts import render
 
 from dashboard.forms import SensorTrendFilterForm
 from dashboard.models import Device, Plant
-from dashboard.sensor_trend_periods import DEFAULT_TREND_PERIOD
+from dashboard.sensor_trend_periods import DEFAULT_TREND_PERIOD, TREND_PERIODS
 from dashboard.services.sensor_trend_service import METRICS, get_sensor_trends
 
 
@@ -15,7 +15,10 @@ def daily_summary_list(request):
     if not form.is_valid():
         return render(request, template_name, {"form": form}, status=400)
 
-    trends = get_sensor_trends(form.cleaned_data["period"])
+    period_key = form.cleaned_data["period"]
+    trends = get_sensor_trends(period_key)
+    trends["use_daily_summary"] = TREND_PERIODS[period_key].use_daily_summary
+    
     devices = Device.objects.order_by("device_name")
 
     # 選択期間に記録された植物名をまとめて取得する。

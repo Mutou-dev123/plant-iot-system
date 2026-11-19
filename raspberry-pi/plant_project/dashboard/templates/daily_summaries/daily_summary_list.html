@@ -1,4 +1,4 @@
-{% exten    ds "base.html" %}
+{% extends "base.html" %}
 
 {% load static %}
 
@@ -6,6 +6,7 @@
 
 {% block css %}
 <link rel="stylesheet" href="{% static 'css/list.css' %}">
+<link rel="stylesheet" href="{% static 'css/sensor-trends.css' %}">
 {% endblock %}
 
 {% block content %}
@@ -27,11 +28,33 @@
 </form>
 
 {% if trends %}
+
+    {% if devices_with_data %}
+        <p id="sensor-trend-chart-error" role="status" hidden>
+            グラフを読み込めませんでした。
+        </p>
+
+        <template id="sensor-trend-chart-card">
+            <article class="sensor-trend-card">
+                <h3></h3>
+                <p data-no-measurement hidden>この項目の計測値がありません。</p>
+                <div class="sensor-trend-plot">
+                    <canvas role="img"></canvas>
+                </div>
+            </article>
+        </template>
+    {% endif %}
+
     {% for device in devices %}
         <section class="sensor-trend-device" aria-labelledby="device-trend-title-{{ device.pk }}">
             <h2 id="device-trend-title-{{ device.pk }}">{{ device.device_name }}</h2>
 
             {% if device.pk in devices_with_data %}
+                <p data-trend-plant-name hidden></p>
+                <div class="sensor-trend-plant-picker" data-trend-plant-picker hidden>
+                    <label for="trend-plant-{{ device.pk }}">観測対象の植物</label>
+                    <select id="trend-plant-{{ device.pk }}" data-trend-plant-select></select>
+                </div>
                 <div class="sensor-trend-charts" data-device-id="{{ device.pk }}"></div>
             {% else %}
                 <p>この期間に計測データはありません。</p>
@@ -43,4 +66,11 @@
 
     {{ trends|json_script:"sensor-trend-data" }}
 {% endif %}
+{% endblock %}
+
+{% block js %}
+    {% if devices_with_data %}
+        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+        <script src="{% static 'js/sensor-trends.js' %}"></script>
+    {% endif %}
 {% endblock %}
