@@ -19,6 +19,14 @@ class DailySensorSummaryServiceTests(TestCase):
         self.device = Device.objects.create(
             device_name="aggregation-test-device",
             plant=self.plant,
+        )
+        self.summary_date = date(2026, 11, 13)
+
+    # 欠損値を除いて集計し、センサーごとに有効件数を数える。
+    def test_aggregates_measurements_and_counts_non_null_values(self):
+        SensorLog.objects.create(
+            device=self.device,
+            plant=self.plant,
             measured_at=timezone.make_aware(
                 timezone.datetime(2026, 11, 13, 1, 0),
                 timezone=timezone.get_current_timezone(),
@@ -88,7 +96,7 @@ class DailySensorSummaryServiceTests(TestCase):
                 timezone.datetime(2026, 11, 13, 2, 0),
                 timezone=timezone.get_current_timezone(),
             ),
-            tempeature=24.0,
+            temperature=24.0,
         )
 
         second_summary = DailySensorSummaryService.aggregate_day(

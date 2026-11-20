@@ -109,6 +109,14 @@ class DailySensorAggregationTaskModelTests(TestCase):
 
     # 同じデバイス・植物・日付の集計タスクを2件作ると、重複エラーになる。
     def test_prevents_duplicate_task_for_same_device_plant_and_date(self):
+        self._create_task(plant=self.plant)
+
+        with self.assertRaises(IntegrityError):
+            with transaction.atomic():
+                self._create_task(plant=self.plant)
+
+    # 植物が未割当でも、同じデバイス・日付の集計タスクは1件に制限される。
+    def test_prevents_duplicate_unassigned_task_for_same_device_and_date(self):
         self._create_task()
 
         with self.assertRaises(IntegrityError):
@@ -116,7 +124,7 @@ class DailySensorAggregationTaskModelTests(TestCase):
                 self._create_task()
 
     # 同じ日付の植物未割当のタスクでも、デバイスが異なれば保存できる。
-    def test_allows_unassignedi_tasks_for_different_devices(self):
+    def test_allows_unassigned_tasks_for_different_devices(self):
         self._create_task()
 
         another_device = Device.objects.create(
