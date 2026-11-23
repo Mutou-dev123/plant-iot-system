@@ -4,3 +4,4 @@ from . import plant_master
 from . import device
 from . import sensor_log
 from . import daily_sensor_summary
+from . import site_config
