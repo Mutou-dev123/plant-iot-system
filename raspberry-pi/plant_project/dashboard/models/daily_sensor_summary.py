@@ -8,7 +8,7 @@ class DailySensorSummary(models.Model):
 
     device = models.ForeignKey(
         "dashboard.Device",
-        on_delete=models.PROTECT,
+        on_delete=models.CASCADE,
         related_name="daily_sensor_summaries",
         verbose_name="デバイス",
     )

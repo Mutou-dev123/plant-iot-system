@@ -58,7 +58,7 @@ class DeviceAdmin(DescriptiveModelAdmin):
         "config_version",
         "applied_config_version",
         "last_seen_at",
-        "communication_status",
+        "communication_status_display",
         "sensor_log_link",
     )
 
@@ -94,7 +94,7 @@ class DeviceAdmin(DescriptiveModelAdmin):
                 "reported_light_enabled_display",
                 "config_version",
                 "applied_config_version",
-                "communication_status",
+                "communication_status_display",
                 "last_seen_at",
             ),
         }),
@@ -110,7 +110,8 @@ class DeviceAdmin(DescriptiveModelAdmin):
         context = {
             **(extra_context or {}),
             "sensor_log_delete_warning": (
-                "このデバイスを削除すると、関連するセンサーログも削除されます。"
+                "このデバイスを削除すると、関連するセンサーログ、"
+                "日別集計、日別集計タスクも削除されます。"
             ),
         }
         return super().delete_view(
