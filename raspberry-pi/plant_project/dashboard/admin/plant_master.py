@@ -3,7 +3,60 @@
 # ==========================================
 
 from django.contrib import admin
+from django.db.models import Q
 from ..models import PlantMaster
+
+
+class RangeSetupFilter(admin.SimpleListFilter):
+    # 管理画面のフィルタ欄に表示する名前
+    title = "適正範囲の設定状況"
+    parameter_name = "range_setup"
+
+    # 判定対象になる4種類の適正範囲の上下限
+    range_fields = (
+        "optimal_temperature_min",
+        "optimal_temperature_max",
+        "optimal_humidity_min",
+        "optimal_humidity_max",
+        "optimal_moisture_min",
+        "optimal_moisture_max",
+        "optimal_light_min",
+        "optimal_light_max",
+    )
+
+    def lookups(self, request, model_admin):
+        # フィルタ欄の選択肢を返す
+        return (
+            ("complete", "すべて設定済み"),
+            ("partial", "一部設定"),
+            ("none", "未設定"),
+        )
+
+    def queryset(self, request, queryset):
+        # 各上下限に値が入っている条件と、未入力の条件を作る
+        all_filled = Q()
+        any_filled = Q()
+        all_empty = Q()
+
+        for field in self.range_fields:
+            all_filled &= Q(**{f"{field}__isnull": False})
+            any_filled |= Q(**{f"{field}__isnull": False})
+            all_empty &= Q(**{f"{field}__isnull": True})
+
+        # 8項目すべてに値がある植物だけを表示する
+        if self.value() == "complete":
+            return queryset.filter(all_filled)
+
+        # 値が一つ以上あり、8項目すべては埋まっていない植物を表示する
+        if self.value() == "partial":
+            return queryset.filter(any_filled).exclude(all_filled)
+
+        # 8項目すべてが未入力の植物だけを表示する
+        if self.value() == "none":
+            return queryset.filter(all_empty)
+
+        # フィルタが選択されていない場合は一覧をそのまま返す
+        return queryset
 
 
 # 植物マスタの一覧と編集画面を設定する
@@ -18,6 +71,10 @@ class PlantMasterAdmin(admin.ModelAdmin):
         "target_light_score",
     )
     search_fields = ("name",)
+
+    # 適正範囲の入力状況で一覧を絞り込む
+    list_filter = (RangeSetupFilter,)
+
     ordering = ("name",)
 
     fieldsets = (
