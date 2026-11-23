@@ -6,6 +6,10 @@ from django.contrib import admin
 
 
 class DescriptiveModelAdmin(admin.ModelAdmin):
+
+    # 各一覧ページの表示件数を50件にする
+    list_per_page = 50
+
     # 各管理クラスで説明文を設定する
     changelist_description = ""
 
