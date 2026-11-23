@@ -3,11 +3,13 @@
 # - 日別レコードの重複制約と、参照先の削除保護
 # - 新しい集計タスクの初期状態
 
-from datetime import date
+from datetime import date, timedelta
+from unittest.mock import patch
 
 from django.db import IntegrityError, transaction
 from django.db.models.deletion import ProtectedError
 from django.test import TestCase
+from django.utils import timezone
 
 from dashboard.models import (
     DailySensorAggregationTask,
@@ -149,3 +151,54 @@ class DailySensorAggregationTaskModelTests(TestCase):
 
         with self.assertRaises(ProtectedError):
             self.plant.delete()
+
+
+class DeviceCommunicationStatusTests(TestCase):
+
+    def setUp(self):
+        self.device = Device.objects.create(
+            device_name="communication-status-device",
+        )
+        self.now = timezone.now()
+
+    # 最終通信日時が未設定のデバイスは「未通信」と判定される。
+    def test_returns_not_communicated_when_last_seen_is_missing(self):
+        self.device.last_seen_at = None
+
+        self.assertEqual(
+            self.device.communication_status,
+            "未通信",
+        )
+
+    # 判定時間と同じ経過時間なら「通信確認済み」と判定される。
+    def test_returns_communicated_at_timeout_boundary(self):
+        self.device.interval_seconds = 30
+        self.device.last_seen_at = self.now - timedelta(seconds=60)
+
+        with patch("dashboard.models.device.timezone.now", return_value=self.now):
+            self.assertEqual(
+                self.device.communication_status,
+                "通信確認済み",
+            )
+
+    # 判定時間を1秒経過すると「通信未確認」と判定される。
+    def test_returns_not_communicated_after_timeout(self):
+        self.device.interval_seconds = 30
+        self.device.last_seen_at = self.now - timedelta(seconds=61)
+
+        with patch("dashboard.models.device.timezone.now", return_value=self.now):
+            self.assertEqual(
+                self.device.communication_status,
+                "通信未確認",
+            )
+
+    # 計測間隔が短い場合も、判定時間には最低60秒が適用される。
+    def test_uses_minimum_timeout_of_sixty_seconds(self):
+        self.device.interval_seconds = 10
+        self.device.last_seen_at = self.now - timedelta(seconds=60)
+
+        with patch("dashboard.models.device.timezone.now", return_value=self.now):
+            self.assertEqual(
+                self.device.communication_status,
+                "通信確認済み",
+            )
