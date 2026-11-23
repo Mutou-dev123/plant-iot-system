@@ -2,7 +2,11 @@
 # 管理者用画面（Device）
 # ==========================================
 
+from urllib.parse import urlencode
+
 from django.contrib import admin
+from django.urls import reverse
+from django.utils.html import format_html
 from .base import DescriptiveModelAdmin
 from ..models import Device
 
@@ -20,6 +24,7 @@ class DeviceAdmin(DescriptiveModelAdmin):
         "mac_address",
         "plant",
         "communication_status_display",
+        "sensor_log_link",
         "interval_seconds",
         "desired_dht_enabled",
         "desired_soil_enabled",
@@ -129,6 +134,13 @@ class DeviceAdmin(DescriptiveModelAdmin):
     @admin.display(description="光量センサー状態", boolean=True)
     def reported_light_enabled_display(self, obj):
         return obj.reported_light_enabled
+
+    # 一覧から、このDeviceの計測ログへ移動できるようにする
+    @admin.display(description="計測ログ")
+    def sensor_log_link(self, obj):
+        url = reverse("admin:dashboard_sensorlog_changelist")
+        query = urlencode({"device__id__exact": obj.pk})
+        return format_html('<a href="{}?{}">ログを見る</a>', url, query)
 
     def save_model(self, request, obj, form, change):
 
