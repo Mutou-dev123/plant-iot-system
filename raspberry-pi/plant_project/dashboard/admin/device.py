@@ -87,6 +87,25 @@ class DeviceAdmin(admin.ModelAdmin):
         }),
     )
 
+    # Device専用の削除確認画面を使う
+    delete_confirmation_template = (
+        "admin/dashboard/device/delete_confirmation.html"
+    )
+
+    def delete_view(self, request, object_id, extra_context=None):
+        # 関連するセンサーログも削除されることを確認画面に伝える
+        context = {
+            **(extra_context or {}),
+            "sensor_log_delete_warning": (
+                "このデバイスを削除すると、関連するセンサーログも削除されます。"
+            ),
+        }
+        return super().delete_view(
+            request,
+            object_id,
+            extra_context=context,
+        )
+
     @admin.display(description="通信状態")
     def communication_status_display(self, obj):
         return obj.communication_status
