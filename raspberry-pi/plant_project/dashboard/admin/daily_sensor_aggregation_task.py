@@ -3,6 +3,7 @@
 # ==========================================
 
 from django.contrib import admin
+from django.utils.html import format_html
 from .base import DescriptiveModelAdmin
 from ..models import DailySensorAggregationTask
 
@@ -18,7 +19,7 @@ class DailySensorAggregationTaskAdmin(DescriptiveModelAdmin):
         "summary_date",
         "device",
         "plant",
-        "status",
+        "status_badge",
         "attempt_count",
         "last_attempt_at",
         "updated_at",
@@ -38,3 +39,20 @@ class DailySensorAggregationTaskAdmin(DescriptiveModelAdmin):
 
     def has_delete_permission(self, request, obj=None):
         return False
+
+    # 処理状態を文字と色で表示する
+    @admin.display(description="処理状態")
+    def status_badge(self, obj):
+        colors = {
+            "pending": "#9a6700",
+            "failed": "#b42318",
+            "completed": "#067647",
+        }
+        color = colors.get(obj.status, "#555555")
+
+        # 状態名も文字で表示し、色だけに頼らない
+        return format_html(
+            '<strong style="color: {};">{}</strong>',
+            color,
+            obj.get_status_display(),
+        )
