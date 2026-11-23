@@ -28,7 +28,7 @@ class SensorLogAdmin(admin.ModelAdmin):
     )
 
     # デバイスで絞り込み、日付階層で計測日をたどれるようにする
-    list_filter = ("display",)
+    list_filter = ("device",)
     date_hierarchy = "measured_at"
 
     # 関連先を一覧表示時にまとめて読み込む

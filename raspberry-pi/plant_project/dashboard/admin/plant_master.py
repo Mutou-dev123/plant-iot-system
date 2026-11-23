@@ -44,7 +44,7 @@ class PlantMasterAdmin(admin.ModelAdmin):
     # 一覧で適性範囲を読みやすく表示する
     @admin.display(description="🌡️ 温度 (℃)")
     def temperature_range(self, obj):
-        if obj.optimalp_temperature_min is None or obj.optimal_temperature_max is None:
+        if obj.optimal_temperature_min is None or obj.optimal_temperature_max is None:
             return "―"
         return f"{obj.optimal_temperature_min} ～ {obj.optimal_temperature_max}"
 

@@ -13,7 +13,7 @@ class DeviceAdmin(admin.ModelAdmin):
         "device_name",
         "mac_address",
         "plant",
-        "communication_status",
+        "communication_status_display",
         "interval_seconds",
         "desired_dht_enabled",
         "desired_soil_enabled",
@@ -86,6 +86,10 @@ class DeviceAdmin(admin.ModelAdmin):
             ),
         }),
     )
+
+    @admin.display(description="通信状態")
+    def communication_status_display(self, obj):
+        return obj.communication_status
 
     def save_model(self, request, obj, form, change):
 
