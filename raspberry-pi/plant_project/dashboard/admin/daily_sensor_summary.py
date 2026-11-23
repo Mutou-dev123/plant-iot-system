@@ -42,3 +42,13 @@ class DailySensorSummaryAdmin(admin.ModelAdmin):
     @admin.display(description="光量平均")
     def light_avg_display(self, obj):
         return "—" if obj.light_avg is None else f"{obj.light_avg:.1f}"
+
+    # 集計結果を管理画面から追加・変更・削除できないようにする
+    def has_add_permission(self, request):
+        return False
+
+    def has_change_permission(self, request, obj=None):
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        return False
