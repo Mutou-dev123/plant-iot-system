@@ -1,8 +1,16 @@
 {% extends "admin/change_list.html" %}
 
 {% block content %}
+
     {% if changelist_description %}
         <p class="help">{{ changelist_description }}</p>
     {% endif %}
+
+    {% if failed_tasks_url %}
+        <p class="help">
+            <a href="{{ failed_tasks_url }}">失敗したタスクを確認する</a>
+        </p>
+    {% endif %}
+    
     {{ block.super }}
 {% endblock %}

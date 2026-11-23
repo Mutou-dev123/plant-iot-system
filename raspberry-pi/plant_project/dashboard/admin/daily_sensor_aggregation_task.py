@@ -2,7 +2,10 @@
 # 管理者用画面（DailySensorAggregationTask）
 # ==========================================
 
+from urllib.parse import urlencode
+
 from django.contrib import admin
+from django.urls import reverse
 from django.utils.html import format_html
 from .base import DescriptiveModelAdmin
 from ..models import DailySensorAggregationTask
@@ -56,3 +59,16 @@ class DailySensorAggregationTaskAdmin(DescriptiveModelAdmin):
             color,
             obj.get_status_display(),
         )
+
+    # 失敗タスクに絞った一覧へのリンクをテンプレートに渡す
+    def changelist_view(self, request, extra_context=None):
+        failed_tasks_url = reverse(
+            "admin:dashboard_dailysensoraggregationtask_changelist"
+        )
+        failed_tasks_url += "?" + urlencode({"status__exact": "failed"})
+
+        context = {
+            **(extra_context or {}),
+            "failed_tasks_url": failed_tasks_url,
+        }
+        return super().changelist_view(request, extra_context=context)
