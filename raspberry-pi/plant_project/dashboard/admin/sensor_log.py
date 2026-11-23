@@ -3,6 +3,8 @@
 # ==========================================
 
 from django.contrib import admin
+from django.urls import reverse
+from django.utils.html import format_html
 from .base import DescriptiveModelAdmin
 from ..models import SensorLog
 
@@ -17,7 +19,7 @@ class SensorLogAdmin(DescriptiveModelAdmin):
 
     list_display = (
         "id",
-        "device",
+        "device_link",
         "plant",
         "measured_at",
         "received_at",
@@ -52,3 +54,16 @@ class SensorLogAdmin(DescriptiveModelAdmin):
 
     def has_delete_permission(self, request, obj=None):
         return False
+
+    # デバイス名から、そのデバイスの管理画面詳細へ移動する
+    @admin.display(description="測定デバイス")
+    def device_link(self, obj):
+        url = reverse(
+            "admin:dashboard_device_change",
+            args=[obj.device_id],
+        )
+        return format_html(
+            '<a href="{}">{}</a>',
+            url,
+            obj.device.device_name,
+        )

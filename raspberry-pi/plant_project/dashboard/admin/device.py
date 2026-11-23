@@ -59,6 +59,7 @@ class DeviceAdmin(DescriptiveModelAdmin):
         "applied_config_version",
         "last_seen_at",
         "communication_status",
+        "sensor_log_link",
     )
 
     fieldsets = (
@@ -68,6 +69,7 @@ class DeviceAdmin(DescriptiveModelAdmin):
                 "plant",
                 "device_uuid",
                 "mac_address",
+                "sensor_log_link",
             ),
         }),
         ("ネットワーク・ファームウェア", {
