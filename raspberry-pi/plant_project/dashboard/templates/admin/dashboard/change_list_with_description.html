@@ -1,0 +1,8 @@
+{% extends "admin/change_list.html" %}
+
+{% block content %}
+    {% if changelist_description %}
+        <p class="help">{{ changelist_description }}</p>
+    {% endif %}
+    {{ block.super }}
+{% endblock %}

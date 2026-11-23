@@ -3,12 +3,18 @@
 # ==========================================
 
 from django.contrib import admin
+from .base import DescriptiveModelAdmin
 from ..models import Device
 
 
 # デバイス情報と設定の管理画面を設定する
 @admin.register(Device)
-class DeviceAdmin(admin.ModelAdmin):
+class DeviceAdmin(DescriptiveModelAdmin):
+    changelist_description = (
+        "ESP32デバイスの状態と設定を管理します。"
+        "設定項目を変更すると、設定バージョンが更新されます。"
+    )
+
     list_display = (
         "device_name",
         "mac_address",

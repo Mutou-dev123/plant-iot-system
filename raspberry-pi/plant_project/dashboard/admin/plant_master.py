@@ -4,6 +4,7 @@
 
 from django.contrib import admin
 from django.db.models import Q
+from .base import DescriptiveModelAdmin
 from ..models import PlantMaster
 
 
@@ -61,7 +62,12 @@ class RangeSetupFilter(admin.SimpleListFilter):
 
 # 植物マスタの一覧と編集画面を設定する
 @admin.register(PlantMaster)
-class PlantMasterAdmin(admin.ModelAdmin):
+class PlantMasterAdmin(DescriptiveModelAdmin):
+    changelist_description = (
+        "植物のしきい値を管理します。"
+        "しきい値の設定状況で絞り込むことが可能です。"
+    )
+
     list_display = (
         "name",
         "temperature_range",

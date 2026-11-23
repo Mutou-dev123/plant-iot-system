@@ -3,12 +3,18 @@
 # ==========================================
 
 from django.contrib import admin
+from .base import DescriptiveModelAdmin
 from ..models import SensorLog
 
 
 # 計測ログを参照・絞り込みするための管理画面設定
 @admin.register(SensorLog)
-class SensorLogAdmin(admin.ModelAdmin):
+class SensorLogAdmin(DescriptiveModelAdmin):
+    changelist_description = (
+        "保存されたセンサー計測ログを閲覧できます。"
+        "追加・編集・削除はできません。"
+    )
+
     list_display = (
         "id",
         "device",

@@ -3,12 +3,17 @@
 # ==========================================
 
 from django.contrib import admin
+from .base import DescriptiveModelAdmin
 from ..models import DailySensorAggregationTask
 
 
 # 日別集計タスクの状態を確認する管理画面
 @admin.register(DailySensorAggregationTask)
-class DailySensorAggregationTaskAdmin(admin.ModelAdmin):
+class DailySensorAggregationTaskAdmin(DescriptiveModelAdmin):
+    changelist_description = (
+        "未処理・失敗など集計処理の状態を管理します。"
+    )
+
     list_display = (
         "summary_date",
         "device",

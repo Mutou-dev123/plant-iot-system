@@ -3,12 +3,17 @@
 # ==========================================
 
 from django.contrib import admin
+from .base import DescriptiveModelAdmin
 from ..models import DailySensorSummary
 
 
 # 日別集計の一覧と平均値を設定する
 @admin.register(DailySensorSummary)
-class DailySensorSummaryAdmin(admin.ModelAdmin):
+class DailySensorSummaryAdmin(DescriptiveModelAdmin):
+    changelist_description = (
+        "センサー計測ログから自動生成される集計結果です。"
+    )
+
     list_display = (
         "summary_date",
         "device",
