@@ -1,0 +1,8 @@
+{% extends "admin/delete_confirmation.html" %}
+
+{% block content %}
+<div class="messagelist">
+    <div class="warning">{{ sensor_log_delete_warning }}</div>
+</div>
+{{ block.super }}
+{% endblock %}

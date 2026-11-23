@@ -13,7 +13,7 @@ class DailySensorAggregationTask(models.Model):
 
     device = models.ForeignKey(
         "dashboard.Device",
-        on_delete=models.PROTECT,
+        on_delete=models.CASCADE,
         related_name="daily_sensor_aggregation_tasks",
         verbose_name="デバイス",
     )
