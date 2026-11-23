@@ -41,9 +41,9 @@ class DeviceAdmin(admin.ModelAdmin):
         "mac_address",
         "ip_address",
         "firmware_version",
-        "reported_dht_enabled",
-        "reported_soil_enabled",
-        "reported_light_enabled",
+        "reported_dht_enabled_display",
+        "reported_soil_enabled_display",
+        "reported_light_enabled_display",
         "config_version",
         "applied_config_version",
         "last_seen_at",
@@ -76,9 +76,9 @@ class DeviceAdmin(admin.ModelAdmin):
         }),
         ("ESP32からの報告・通信状態", {
             "fields": (
-                "reported_dht_enabled",
-                "reported_soil_enabled",
-                "reported_light_enabled",
+                "reported_dht_enabled_display",
+                "reported_soil_enabled_display",
+                "reported_light_enabled_display",
                 "config_version",
                 "applied_config_version",
                 "communication_status",
@@ -106,9 +106,23 @@ class DeviceAdmin(admin.ModelAdmin):
             extra_context=context,
         )
 
+    # 通信状態の見出しを日本語にする
     @admin.display(description="通信状態")
     def communication_status_display(self, obj):
         return obj.communication_status
+
+    # ESP32から報告されたセンサー状態を日本語で表示する
+    @admin.display(description="温湿度センサー状態", boolean=True)
+    def reported_dht_enabled_display(self, obj):
+        return obj.reported_dht_enabled
+
+    @admin.display(description="土壌水分センサー状態", boolean=True)
+    def reported_soil_enabled_display(self, obj):
+        return obj.reported_soil_enabled
+
+    @admin.display(description="光量センサー状態", boolean=True)
+    def reported_light_enabled_display(self, obj):
+        return obj.reported_light_enabled
 
     def save_model(self, request, obj, form, change):
 
