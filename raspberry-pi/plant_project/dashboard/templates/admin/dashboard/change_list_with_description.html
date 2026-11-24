@@ -12,5 +12,16 @@
         </p>
     {% endif %}
     
+    {% if run_aggregation_url %}
+        {% comment %}日別集計の起動をPOSTで依頼する。{% endcomment %}
+        <form method="post" action="{{ run_aggregation_url }}">
+            {% csrf_token %}
+            <button type="submit"
+                    onclick="return confirm('前日までの未処理・失敗タスクを集計しますか？');">
+                前日までの未処理・失敗を実行
+            </button>
+        </form>
+    {% endif %}
+
     {{ block.super }}
 {% endblock %}

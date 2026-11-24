@@ -2,11 +2,16 @@
 # 管理者用画面（DailySensorAggregationTask）
 # ==========================================
 
+import subprocess
 from urllib.parse import urlencode
 
-from django.contrib import admin
-from django.urls import reverse
+from django.contrib import admin, messages
+from django.core.exceptions import PermissionDenied
+from django.http import HttpResponseNotAllowed
+from django.shortcuts import redirect
+from django.urls import path, reverse
 from django.utils.html import format_html
+
 from .base import DescriptiveModelAdmin
 from ..models import DailySensorAggregationTask
 
@@ -60,6 +65,51 @@ class DailySensorAggregationTaskAdmin(DescriptiveModelAdmin):
             obj.get_status_display(),
         )
 
+
+    # 実行用URLを、オブジェクトIDを受け取る標準URLより先に登録する。
+    def get_urls(self):
+        return [
+            path(
+                "run-aggregation/",
+                self.admin_site.admin_view(self.run_aggregation),
+                name="dashboard_dailysensoraggregationtask_run",
+            ),
+        ] + super().get_urls()
+
+    def run_aggregation(self, request):
+        if not request.user.is_superuser:
+            raise PermissionDenied
+        if request.method != "POST":
+            return HttpResponseNotAllowed(["POST"])
+
+        # 定期実行と同じサービスに起動を依頼する。
+        try:
+            subprocess.run(
+                [
+                    "/usr/bin/systemctl",
+                    "--no-block",
+                    "--no-ask-password",
+                    "start",
+                    "obserleaf-daily-aggregation.service",
+                ],
+                check=True,
+                timeout=5,
+            )
+        except (OSError, subprocess.SubprocessError):
+            self.message_user(
+                request,
+                "日別集計の起動を確認できませんでした。サービスのログを確認してください。",
+                level=messages.ERROR,
+            )
+        else:
+            self.message_user(
+                request,
+                "日別集計の起動を受け付けました。一覧を更新して処理状態を確認してください。",
+                level=messages.SUCCESS,
+            )
+
+        return redirect("admin:dashboard_dailysensoraggregationtask_changelist")
+
     # 失敗タスクに絞った一覧へのリンクをテンプレートに渡す
     def changelist_view(self, request, extra_context=None):
         failed_tasks_url = reverse(
@@ -71,4 +121,8 @@ class DailySensorAggregationTaskAdmin(DescriptiveModelAdmin):
             **(extra_context or {}),
             "failed_tasks_url": failed_tasks_url,
         }
+        if request.user.is_superuser:
+            context["run_aggregation_url"] = reverse(
+                "admin:dashboard_dailysensoraggregationtask_run"
+            )
         return super().changelist_view(request, extra_context=context)
