@@ -7,6 +7,8 @@
 
 import logging
 
+from zoneinfo import ZoneInfo
+
 from django.core.management.base import BaseCommand, CommandError
 from django.db import DatabaseError
 from django.utils import timezone
@@ -23,9 +25,12 @@ class Command(BaseCommand):
     help = "未処理・失敗状態の日別集計タスクを実行します。"
 
     def handle(self, *args, **options):
+        # 日本時間で日付が変わった分だけを集計する。
+        today = timezone.localdate(timezone=ZoneInfo("Asia/Tokyo"))
         tasks = list(
             DailySensorAggregationTask.objects
             .filter(
+                summary_date__lt=today,
                 status__in=[
                     DailySensorAggregationTask.Status.PENDING,
                     DailySensorAggregationTask.Status.FAILED,
