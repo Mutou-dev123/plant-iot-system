@@ -1,6 +1,6 @@
 # テスト対象：日別集計結果と日別集計タスクのモデル
 # 確認すること
-# - 日別レコードの重複制約と、参照先の削除保護
+# - 日別レコードの重複制約と、デバイス・植物の削除時の挙動
 # - 新しい集計タスクの初期状態
 
 from datetime import date, timedelta
@@ -67,12 +67,17 @@ class DailySensorSummaryModelTests(TestCase):
 
         self.assertEqual(DailySensorSummary.objects.count(), 2)
 
-    # 集計結果が参照しているデバイスと植物は、どちらも削除が拒否される。
-    def test_protects_device_and_plant_with_summary_from_delection(self):
-        self._create_summary(plant=self.plant)
+    # デバイスを削除すると、関連する集計結果も削除される。
+    def test_deletes_summary_when_device_is_deleted(self):
+        summary = self._create_summary(plant=self.plant)
 
-        with self.assertRaises(ProtectedError):
-            self.device.delete()
+        self.device.delete()
+
+        self.assertFalse(DailySensorSummary.objects.filter(pk=summary.pk).exists())
+
+    # 集計結果が参照している植物の削除は拒否される。
+    def test_protects_plant_with_summary_from_deletion(self):
+        self._create_summary(plant=self.plant)
 
         with self.assertRaises(ProtectedError):
             self.plant.delete()
@@ -142,15 +147,21 @@ class DailySensorAggregationTaskModelTests(TestCase):
             2,
         )
 
-    # 集計タスクが参照しているデバイスと植物は、どちらも削除が拒否される。
-    def test_protects_device_and_plant_with_task_from_deletion(self):
+    # デバイスを削除すると、関連する集計タスクも削除される。
+    def test_deletes_task_when_device_is_deleted(self):
+        task = self._create_task(plant=self.plant)
+
+        self.device.delete()
+
+        self.assertFalse(DailySensorAggregationTask.objects.filter(pk=task.pk).exists())
+
+    # 集計タスクが参照している植物の削除は拒否される。
+    def test_protects_plant_with_task_from_deletion(self):
         self._create_task(plant=self.plant)
 
         with self.assertRaises(ProtectedError):
-            self.device.delete()
-
-        with self.assertRaises(ProtectedError):
             self.plant.delete()
+
 
 
 class DeviceCommunicationStatusTests(TestCase):
@@ -170,10 +181,10 @@ class DeviceCommunicationStatusTests(TestCase):
             "未通信",
         )
 
-    # 判定時間と同じ経過時間なら「通信確認済み」と判定される。
+    # 計測間隔30秒では、判定時間の90秒ちょうどまで「通信確認済み」になる。
     def test_returns_communicated_at_timeout_boundary(self):
         self.device.interval_seconds = 30
-        self.device.last_seen_at = self.now - timedelta(seconds=60)
+        self.device.last_seen_at = self.now - timedelta(seconds=90)
 
         with patch("dashboard.models.device.timezone.now", return_value=self.now):
             self.assertEqual(
@@ -181,10 +192,10 @@ class DeviceCommunicationStatusTests(TestCase):
                 "通信確認済み",
             )
 
-    # 判定時間を1秒経過すると「通信未確認」と判定される。
+    # 判定時間を1秒過ぎた91秒では「通信未確認」になる。
     def test_returns_not_communicated_after_timeout(self):
         self.device.interval_seconds = 30
-        self.device.last_seen_at = self.now - timedelta(seconds=61)
+        self.device.last_seen_at = self.now - timedelta(seconds=91)
 
         with patch("dashboard.models.device.timezone.now", return_value=self.now):
             self.assertEqual(
