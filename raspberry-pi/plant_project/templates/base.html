@@ -29,13 +29,21 @@
 
     <header>
 
-        <button id="menu-button" type="button" aria-label="メニューを開く">
+        <button
+            id="menu-button"
+            type="button"
+            aria-label="メニューを開閉"
+            aria-expanded="false"
+            aria-controls="sidebar"
+        >
             <i data-lucide="menu" aria-hidden="true"></i>
         </button>
 
         <h2>
-            <i data-lucide="leaf" aria-hidden="true"></i>
-            ObserLeaf
+            <a href="{% url 'dashboard' %}" aria-label="ObserLeaf ダッシュボードへ">
+                <i data-lucide="leaf" aria-hidden="true"></i>
+                ObserLeaf
+            </a>
         </h2>
 
         <div id="realtime-clock">
