@@ -157,6 +157,20 @@ header h2 {
     outline-offset: 3px;
 }
 
+.button-secondary {
+    color: #47614b;
+    background: #e7f1e4;
+}
+
+.button-secondary:hover {
+    background: #d6e8d2;
+}
+
+/* 詳細画面では戻る操作を左側に置く */
+.button-back {
+    margin-right: auto;
+}
+
 
 /*==============================
     テーブル
