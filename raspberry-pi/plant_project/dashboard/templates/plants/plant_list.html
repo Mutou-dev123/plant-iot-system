@@ -25,22 +25,23 @@
         {% endif %}
     </h1>
 
-    {% if is_archived_list %}
-        <a href="{% url 'plant_list' %}" class="button">
-            <i data-lucide="list" aria-hidden="true"></i>
-            植物一覧へ戻る
-        </a>
-    {% else %}
-        <a href="{% url 'plant_create' %}" class="button">
-            <i data-lucide="plus" aria-hidden="true"></i>
-            植物を登録
-        </a>
-        <a href="{% url 'plant_archived_list' %}" class="button">
-            <i data-lucide="archive" aria-hidden="true"></i>
-            アーカイブを見る
-        </a>
-    {% endif %}
-
+    <div class="list-header-actions">
+        {% if is_archived_list %}
+            <a href="{% url 'plant_list' %}" class="button">
+                <i data-lucide="list" aria-hidden="true"></i>
+                植物一覧へ戻る
+            </a>
+        {% else %}
+            <a href="{% url 'plant_archived_list' %}" class="button">
+                <i data-lucide="archive" aria-hidden="true"></i>
+                アーカイブを見る
+            </a>
+            <a href="{% url 'plant_create' %}" class="button">
+                <i data-lucide="plus" aria-hidden="true"></i>
+                植物を登録する
+            </a>
+        {% endif %}
+    </div>
 </div>
 
 <!-- 登録植物一覧表 -->
@@ -76,7 +77,7 @@
                             class="button button-detail"
                         >
                             <i data-lucide="eye" aria-hidden="true"></i>
-                            詳細
+                            詳しく見る
                         </a>
     
                         <!-- 編集ボタン -->
@@ -85,7 +86,7 @@
                             class="button button-edit"
                         >
                             <i data-lucide="pencil" aria-hidden="true"></i>
-                            編集
+                            編集する
                         </a>
     
                         <!-- アーカイブ・復元ボタン -->
@@ -98,7 +99,7 @@
                                 {% csrf_token %}
                                 <button type="submit" class="button button-edit">
                                     <i data-lucide="archive-restore" aria-hidden="true"></i>
-                                    復元
+                                    復元する
                                 </button>
                             </form>
                         {% else %}
@@ -111,7 +112,7 @@
                                 {% csrf_token %}
                                 <button type="submit" class="button button-delete">
                                     <i data-lucide="archive" aria-hidden="true"></i>
-                                    アーカイブ
+                                    アーカイブする
                                 </button>
                             </form>
                         {% endif %}

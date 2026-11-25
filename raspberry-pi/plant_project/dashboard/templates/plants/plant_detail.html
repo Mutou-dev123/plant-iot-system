@@ -77,6 +77,15 @@
         <!-- 操作ボタン群 -->
         <div class="action-buttons">
 
+            {% if plant.is_archived %}
+                <a href="{% url 'plant_archived_list' %}" class="button button-secondary button-back">
+            {% else %}
+                <a href="{% url 'plant_list' %}" class="button button-secondary button-back">
+            {% endif %}
+                    <i data-lucide="arrow-left" aria-hidden="true"></i>
+                    一覧へ戻る
+                </a>
+
             <!-- 編集 -->
             <a
                 href="{% url 'plant_edit' plant.id %}"

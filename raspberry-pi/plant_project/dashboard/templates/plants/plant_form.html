@@ -69,6 +69,15 @@
 
             <div class="form-actions">
 
+                {% if form.instance.pk %}
+                    <a href="{% url 'plant_detail' form.instance.pk %}" class="button button-secondary">
+                {% else %}
+                    <a href="{% url 'plant_list' %}" class="button button-secondary">
+                {% endif %}
+                        <i data-lucide="arrow-left" aria-hidden="true"></i>
+                        キャンセル
+                    </a>
+
                 <button
                     class="button-primary"
                     type="submit"

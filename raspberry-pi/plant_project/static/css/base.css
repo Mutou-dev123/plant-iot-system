@@ -81,48 +81,94 @@ header h2 {
 ==============================*/
 .button,
 .button-primary {
-
-    display: inline-block;
-
-    padding: 10px 18px;
-
-    border: none;
-    border-radius: 8px;
-
+    font-family: inherit;
+    font-size: 0.92rem;
+    font-weight: 600;
+    letter-spacing: 0.03em;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    padding: 9px 16px;
+    border: 0;
+    border-radius: 999px;
     text-decoration: none;
-
     cursor: pointer;
-
-    transition: .2s;
+    transition: background-color 0.2s, box-shadow 0.2s, transform 0.2s;
 }
 
+/* 登録・保存 */
 .button-primary,
 .button {
-
-    background: #4caf50;
-    color: white;
+    color: #fff;
+    background: #4f9b62;
 }
 
+/* 詳細 */
+.button-detail {
+    color: #fff;
+    background: #638fca;
+}
+
+/* 編集 */
+.button-edit {
+    color: #49380c;
+    background: #f0cf78;
+}
+
+/* 削除 */
+.button-delete {
+    color: #fff;
+    background: #d96f73;
+}
+
+/* アーカイブ */
+.button-archive {
+    color: #fff;
+    background: #8e78b8;
+}
+
+/* 操作別の色を保ったまま、ホバー時は少し濃くする */
 .button:hover,
 .button-primary:hover {
-
-    background: #449d48;
+    background: #3f8551;
 }
 
-.button-edit {
-
-    background: #ffc107;
-    color: black;
+.button-detail:hover {
+    background: #507bb2;
 }
 
-.button-delete {
-
-    background: #dc3545;
+.button-edit:hover {
+    background: #dfba5f;
 }
 
-.button-detail {
+.button-delete:hover {
+    background: #c55b60;
+}
 
-    background: #0d6efd;
+.button-archive:hover {
+    background: #77619f;
+}
+
+/* キーボード操作中のフォーカスを見やすくする */
+.button:focus-visible,
+.button-primary:focus-visible {
+    outline: 3px solid #2f5d34;
+    outline-offset: 3px;
+}
+
+.button-secondary {
+    color: #47614b;
+    background: #e7f1e4;
+}
+
+.button-secondary:hover {
+    background: #d6e8d2;
+}
+
+/* 詳細画面では戻る操作を左側に置く */
+.button-back {
+    margin-right: auto;
 }
 
 
