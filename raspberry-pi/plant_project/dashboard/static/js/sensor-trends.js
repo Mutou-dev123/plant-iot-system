@@ -24,12 +24,44 @@ function initializeSensorTrends() {
         includeTime ? formatDate(stamp).slice(5) : stamp.slice(0, 10)
     );
 
+    const boundaryTimes = boundaries.map((stamp) => Date.parse(stamp));
+    const formatTime = new Intl.DateTimeFormat("ja-JP", {
+        timeZone: "Asia/Tokyo",
+        hour: "2-digit",
+        minute: "2-digit",
+        hourCycle: "h23",
+    });
+
+    const chartData = (observation, key) => {
+        const values = observation[key];
+        const times = observation.measurement_times?.[key];
+        if (!times) return values;
+
+        return values.map((y, index) => {
+            //実測時刻がない枠は中央に置き、欠測値は null のまま渡す。
+            const midpoint = (boundaryTimes[index] + boundaryTimes[index + 1]) / 2;
+            const x = times[index] === null ? midpoint : Date.parse(times[index]);
+            return { x, y };
+        });
+    };
+
     for (const grid of document.querySelectorAll(".sensor-trend-charts")) {
         const observations = series.filter((item) =>
             item.device_id === Number(grid.dataset.deviceId)
             && metrics.some(({ key }) => item[key].some((value) => value !== null))
         );
         if (observations.length === 0) continue;
+
+        const xAxis = observations[0].measurement_times ? {
+            type: "linear",
+            min: boundaryTimes[0],
+            max: boundaryTimes.at(-1),
+            ticks: {
+                count: boundaries.length,
+                maxRotation: 0,
+                callback: (value) => formatTime.format(value),
+            },
+        } : { ticks: { maxTicksLimit: 6, maxRotation: 0 } };
 
         const cards = metrics.map(({ key, title, color }) => {
             const card = cardTemplate.content.cloneNode(true);
@@ -47,7 +79,7 @@ function initializeSensorTrends() {
                 data: {
                     labels,
                     datasets: [{
-                        data: values,
+                        data: chartData(observations[0], key),
                         borderColor: color,
                         pointBackgroundColor: color,
                         pointRadius: 2,
@@ -76,7 +108,7 @@ function initializeSensorTrends() {
                         },
                     },
                     scales: {
-                        x: { ticks: { maxTicksLimit: 6, maxRotation: 0 } },
+                        x: xAxis,
                     },
                 },
             });
@@ -103,7 +135,7 @@ function initializeSensorTrends() {
             const selected = observations[Number(select.value)];
             for (const { key, chart, empty } of cards) {
                 const values = selected[key];
-                chart.data.datasets[0].data = values;
+                chart.data.datasets[0].data = chartData(selected, key);
                 empty.hidden = values.some((value) => value !== null);
                 chart.update("none");
             }
