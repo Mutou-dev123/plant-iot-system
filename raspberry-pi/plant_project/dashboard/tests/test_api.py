@@ -168,7 +168,7 @@ class ChartDataAPITests(TestCase):
                 humidity=None if minute == 10 else 40 + minute,
                 moisture=60 + minute,
             )
-            for minute in reversed(range(20))
+            for minute in reversed(range(22))
         )
 
         with timezone.override(ZoneInfo("Asia/Tokyo")):
