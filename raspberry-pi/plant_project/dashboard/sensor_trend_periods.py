@@ -21,7 +21,7 @@ DEFAULT_TREND_PERIOD = "24h"
 # グループと期間の並び順をプルダウンにも使う。
 PERIOD_GROUPS = {
     "時間": {
-        "1h": TrendPeriod("1時間", timedelta(hours=1), timedelta(minutes=5)),
+        "1h": TrendPeriod("1時間", timedelta(hours=1), timedelta(minutes=10)),
         "3h": TrendPeriod("3時間", timedelta(hours=3), timedelta(minutes=15)),
         "6h": TrendPeriod("6時間", timedelta(hours=6), timedelta(minutes=15)),
         "12h": TrendPeriod("12時間", timedelta(hours=12), timedelta(minutes=30)),
