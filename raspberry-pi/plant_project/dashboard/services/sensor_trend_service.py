@@ -2,7 +2,7 @@ from calendar import monthrange
 from collections import defaultdict
 from datetime import datetime, time
 
-from django.db.models import Avg, Case, F, IntegerField, Q, Sum, When
+from django.db.models import Avg, Case, Count, F, IntegerField, Max, Q, Sum, When
 from django.db.models.functions import NullIf
 from django.utils import timezone
 
@@ -72,6 +72,14 @@ def get_sensor_trends(period_key, *, now=None):
         limits = boundaries
         averages = {metric: Avg(metric) for metric in METRICS}
 
+    measurement_stats = {}
+    if period_key == "1h":
+        for metric in METRICS:
+            measurement_stats[f"{metric}_count"] = Count(metric)
+            measurement_stats[f"{metric}_measured_at"] = Max(
+                "measured_at", filter=Q(**{f"{metric}__isnull": False})
+            )
+
     # 開始を含み、終了を含まない。区間の境界にある計測は次の区間に入る。
     rows = (
         queryset.filter(
@@ -87,7 +95,7 @@ def get_sensor_trends(period_key, *, now=None):
             )
         )
         .values("device_id", "plant_id", "bucket")
-        .annotate(**averages)
+        .annotate(**measurement_stats, **averages)
         .order_by("device_id", "plant_id", "bucket")
     )
 
@@ -98,8 +106,21 @@ def get_sensor_trends(period_key, *, now=None):
     )
     for row in rows:
         values = by_observation[row["device_id"], row["plant_id"]]
+        index = row["bucket"]
         for metric in METRICS:
-            values[metric][row["bucket"]] = row[metric]
+            values[metric][index] = row[metric]
+
+        if period_key == "1h":
+            # 有効な計測値が1件の枠だけ実測時刻を渡す。
+            if "measurement_times" not in values:
+                values["measurement_times"] = {
+                    metric: [None] * bucket_count for metric in METRICS
+                }
+            for metric in METRICS:
+                if row[f"{metric}_count"] == 1:
+                    values["measurement_times"][metric][index] = row[
+                        f"{metric}_measured_at"
+                    ].isoformat()
 
     return {
         "boundaries": [boundary.isoformat() for boundary in boundaries],
