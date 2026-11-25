@@ -25,22 +25,23 @@
         {% endif %}
     </h1>
 
-    {% if is_archived_list %}
-        <a href="{% url 'plant_list' %}" class="button">
-            <i data-lucide="list" aria-hidden="true"></i>
-            植物一覧へ戻る
-        </a>
-    {% else %}
-        <a href="{% url 'plant_create' %}" class="button">
-            <i data-lucide="plus" aria-hidden="true"></i>
-            植物を登録
-        </a>
-        <a href="{% url 'plant_archived_list' %}" class="button">
-            <i data-lucide="archive" aria-hidden="true"></i>
-            アーカイブを見る
-        </a>
-    {% endif %}
-
+    <div class="list-header-actions">
+        {% if is_archived_list %}
+            <a href="{% url 'plant_list' %}" class="button">
+                <i data-lucide="list" aria-hidden="true"></i>
+                植物一覧へ戻る
+            </a>
+        {% else %}
+            <a href="{% url 'plant_create' %}" class="button">
+                <i data-lucide="plus" aria-hidden="true"></i>
+                植物を登録
+            </a>
+            <a href="{% url 'plant_archived_list' %}" class="button">
+                <i data-lucide="archive" aria-hidden="true"></i>
+                アーカイブを見る
+            </a>
+        {% endif %}
+    </div>
 </div>
 
 <!-- 登録植物一覧表 -->
