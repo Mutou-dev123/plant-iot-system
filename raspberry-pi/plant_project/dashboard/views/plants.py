@@ -19,6 +19,7 @@ from django.views.decorators.http import require_POST
 def plant_list(request):
 
     plants = Plant.objects.filter(is_archived=False)
+    archived_count = Plant.objects.filter(is_archived=True).count()
 
     return render(
         request,
@@ -26,6 +27,7 @@ def plant_list(request):
         {
             "plants": plants,
             "is_archived_list": False,
+            "archived_count": archived_count,
         },
     )
 
