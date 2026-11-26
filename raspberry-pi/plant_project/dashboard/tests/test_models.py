@@ -213,3 +213,14 @@ class DeviceCommunicationStatusTests(TestCase):
                 self.device.communication_status,
                 "通信確認済み",
             )
+
+    # 最低60秒が適用される場合、最終通信から61秒後は「通信未確認」になる。
+    def test_returns_not_communicated_after_minimum_timeout(self):
+        self.device.interval_seconds = 10
+        self.device.last_seen_at = self.now - timedelta(seconds=61)
+
+        with patch("dashboard.models.device.timezone.now", return_value=self.now):
+            self.assertEqual(
+                self.device.communication_status,
+                "通信未確認"
+            )

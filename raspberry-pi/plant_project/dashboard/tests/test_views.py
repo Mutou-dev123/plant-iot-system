@@ -3,6 +3,8 @@
 # - アーカイブ前後の一覧表示、デバイスの割当、過去ログの保持
 # - 復元時のデバイスの割当と、アーカイブ・復元のHTTPメソッド
 
+from datetime import timedelta
+
 from django.test import TestCase
 from django.urls import reverse
 from django.utils import timezone
@@ -78,3 +80,27 @@ class PlantArchiveTests(TestCase):
 
         self.assertEqual(archive_response.status_code, 405)
         self.assertEqual(restore_response.status_code, 405)
+
+
+class DashboardChartTests(TestCase):
+
+    # 先頭の欠損は残し、有効性がある箇所から温度・湿度を前方補完する。
+    def test_initial_chart_forward_fills_temperature_and_humidity(self):
+        device = Device.objects.create(device_name="dashboard-chart-device")
+        start = timezone.now()
+        measurements = [
+            (None, None), (21, 40), (None, None), (23, 45), (None, None)
+        ]
+        for offset, (temperature, humidity) in enumerate(measurements):
+            SensorLog.objects.create(
+                device=device,
+                measured_at=start + timedelta(minutes=offset),
+                temperature=temperature,
+                humidity=humidity,
+            )
+
+        response = self.client.get(reverse("dashboard"))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.context["temp_data"], [None, 21, 21, 23, 23])
+        self.assertEqual(response.context["humidity_data"], [None, 40, 40, 45, 45])
