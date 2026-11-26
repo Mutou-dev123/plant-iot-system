@@ -117,14 +117,11 @@ class Device(models.Model):
         verbose_name_plural = "デバイス"
 
     # 【通信状況】
+    # 接続状態を画像のCSSクラスに使えるコードで返す。
     @property
-    def communication_status(self):
-        
-        """ 最終通信日時と計測間隔から通信状態を判定する """
-
-        # 一度も通信していない
+    def connection_status_code(self):
         if self.last_seen_at is None:
-            return "未通信"
+            return "unknown"
 
         # 判定時間：計測間隔の3倍
         timeout_seconds = max(self.interval_seconds * 3, 60)
@@ -133,9 +130,28 @@ class Device(models.Model):
         elapsed = (timezone.now() - self.last_seen_at).total_seconds()
 
         if elapsed <= timeout_seconds:
-            return "通信確認済み"
+            return "online"
 
-        return "通信未確認"
+        return "offline"
+
+    # 画面で使う接続状態の文言を返す。
+    @property
+    def connection_status_label(self):
+        labels = {
+            "online": "オンライン",
+            "offline": "オフライン",
+            "unknown": "未確認",
+        }
+        return labels[self.connection_status_code]
+
+    @property
+    def communication_status(self):
+        labels = {
+            "online": "通信確認済み",
+            "offline": "通信未確認",
+            "unknown": "未通信",
+        }
+        return labels[self.connection_status_code]
 
     def __str__(self):
         return self.device_name

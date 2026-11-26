@@ -74,14 +74,30 @@
                 <td>{{ device.interval_seconds }} 秒</td>
 
                 <!-- 通信状態 -->
-                <td>{{ device.communication_status }}</td>
+                <td>
+                    <span class="device-status device-status--{{ device.connection_status_code }}">
+                        {% if device.connection_status_code == "online" %}
+                            <i data-lucide="wifi" aria-hidden="true"></i>
+                        {% elif device.connection_status_code == "offline" %}
+                            <i data-lucide="wifi-off" aria-hidden="true"></i>
+                        {% else %}
+                            <i data-lucide="circle-help" aria-hidden="true"></i>
+                        {% endif %}
+                        {{ device.connection_status_label }}
+                    </span>
+                </td>
 
-                <!-- 最終通信日時 -->
+                <!-- 最終受信日時 -->
                 <td>
                     {% if device.last_seen_at %}
-                        {{ device.last_seen_at|date:"Y/m/d H:i:s" }}
+                        <time
+                            datetime="{{ device.last_seen_at|date:'c'}}"
+                            title="{{ device.last_seen_at|date:'Y/m/d H:i:s' }}"
+                        >
+                            {{ device.last_seen_at|timesince }}前
+                        </time>
                     {% else %}
-                        通信履歴なし
+                        受信履歴なし
                     {% endif %}
                 </td>
 
