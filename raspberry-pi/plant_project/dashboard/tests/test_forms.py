@@ -76,3 +76,36 @@ class DeviceFormTests(TestCase):
         updated_device = form.save()
 
         self.assertEqual(updated_device.config_version, 1)
+
+    # センサーの切り替えや複数の設定変更を保存すると、設定バージョンが1加算される。
+    def test_increments_config_version_once_for_sensor_changes(self):
+        sensor_fields = (
+            "desired_dht_enabled",
+            "desired_soil_enabled",
+            "desired_light_enabled",
+        )
+        changes = [{field: False} for field in sensor_fields]
+        changes.append({"interval_seconds": 600, "desired_dht_enabled": False})
+
+        for index, changed_values in enumerate(changes):
+            with self.subTest(changed_values=changed_values):
+                device = Device.objects.create(
+                    device_name=f"sensor-config-device-{index}",
+                    interval_seconds=300,
+                    config_version=7,
+                )
+                data = {
+                    "device_name": device.device_name,
+                    "interval_seconds": device.interval_seconds,
+                    **dict.fromkeys(sensor_fields, True),
+                    **changed_values,
+                }
+                form = DeviceForm(data=data, instance=device)
+
+                self.assertTrue(form.is_valid(), form.errors)
+                form.save()
+                device.refresh_from_db()
+
+                self.assertEqual(device.config_version, 8)
+                for field, expected in changed_values.items():
+                    self.assertEqual(getattr(device, field), expected)
