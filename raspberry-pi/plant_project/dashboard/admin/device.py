@@ -120,10 +120,10 @@ class DeviceAdmin(DescriptiveModelAdmin):
             extra_context=context,
         )
 
-    # 通信状態の見出しを日本語にする
-    @admin.display(description="通信状態")
+    # 接続状態の見出しを日本語にする
+    @admin.display(description="接続状態")
     def communication_status_display(self, obj):
-        return obj.communication_status
+        return obj.communication_status_label
 
     # ESP32から報告されたセンサー状態を日本語で表示する
     @admin.display(description="温湿度センサー状態", boolean=True)
