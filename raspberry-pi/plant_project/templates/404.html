@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+
+{% block title %}ページが見つかりません | ObserLeaf{% endblock %}
+
+{% block content %}
+<section aria-labelledby="error-title">
+    <p>404</p>
+    <h1 id="error-title">ページが見つかりません</h1>
+    <p>URLをご確認いただくか、ダッシュボードへお戻りください。</p>
+    <a class="button-primary" href="{% url 'dashboard' %}">
+        ダッシュボードへ戻る
+    </a>
+</section>
+{% endblock %}
