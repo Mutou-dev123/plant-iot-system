@@ -74,16 +74,18 @@
             <!-- 通信状態 -->
             <tr>
                 <th>通信状態</th>
-                <span class="device-status device-status--{{ device.connection_status_code }}">
-                    {% if device.connection_status_code == "online" %}
-                        <i data-lucide="wifi" aria-hidden="true"></i>
-                    {% elif device.connection_status_code == "offline" %}
-                        <i data-lucide="wifi-off" aria-hidden="true"></i>
-                    {% else %}
-                        <i data-lucide="circle-help" aria-hidden="true"></i>
-                    {% endif %}
-                    {{ device.connection_status_label }}
-                </span>
+                <td>
+                    <span class="device-status device-status--{{ device.connection_status_code }}">
+                        {% if device.connection_status_code == "online" %}
+                            <i data-lucide="wifi" aria-hidden="true"></i>
+                        {% elif device.connection_status_code == "offline" %}
+                            <i data-lucide="wifi-off" aria-hidden="true"></i>
+                        {% else %}
+                            <i data-lucide="circle-help" aria-hidden="true"></i>
+                        {% endif %}
+                        {{ device.connection_status_label }}
+                    </span>
+                </td>
             </tr>
 
             <!-- 最終受信日時 -->
@@ -93,7 +95,7 @@
                     {% if device.last_seen_at %}
                         <time
                             datetime="{{ device.last_seen_at|date:'c' }}"
-                            title="{{ device.last_seen_at|date: 'Y/m/d H:i:s' }}"
+                            title="{{ device.last_seen_at|date:'Y/m/d H:i:s' }}"
                         >
                             {{ device.last_seen_at|timesince }}前
                         </time>
