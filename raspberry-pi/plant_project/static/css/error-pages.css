@@ -1,0 +1,107 @@
+/*==============================
+    エラーページCSS
+==============================*/
+.error-page {
+    --accent: #386244;
+    --wash: #eaf3e5;
+    display: grid;
+    grid-template-columns: minmax(0, 2fr) minmax(0, 3fr);
+    max-width: 56rem;
+    margin: clamp(1rem, 7vh, 5rem) auto;
+    overflow: hidden;
+    border: 1px solid #dce7d9;
+    border-radius: 1.5rem;
+    background: #fff;
+    box-shadow: 0 12px 36px rgb(41 68 43 / 10%);
+}
+
+.error-page--500 {
+    --accent: #855417;
+    --wash: #fff2d9;
+}
+
+.error-page__art {
+    position: relative;
+    min-height: 14rem;
+    color: var(--accent);
+    background: radial-gradient(circle at 50% 38%, #fff, var(--wash) 74%);
+}
+
+.error-page__leaf {
+    position: absolute;
+    top: 22%;
+    left: 50%;
+    width: 3rem;
+    aspect-ratio: 1;
+    border-radius: 75% 0 75% 0;
+    background: linear-gradient(135deg, #78a76c, #386244);
+    transform: translateX(-50%) rotate(-12deg);
+}
+
+.error-page__trace {
+    position: absolute;
+    inset: 47% 17% 15%;
+}
+
+.error-page__trace::before,
+.error-page__trace::after {
+    position: absolute;
+    inset: 0;
+    background: currentColor;
+}
+
+.error-page--404 .error-page__trace::before {
+    content: "";
+    clip-path: polygon(
+        47% 100%, 53% 100%, 53% 56%, 84% 13%, 79% 6%,
+        50% 47%, 21% 6%, 16% 13%, 47% 56%
+    );
+}
+
+.error-page--500 .error-page__trace::before {
+    content: "";
+    clip-path: polygon(
+        0 51%, 17% 51%, 29% 16%, 42% 73%, 48% 73%,
+        48% 81%, 38% 81%, 28% 34%, 21% 59%, 0 59%
+    );
+}
+
+.error-page--500 .error-page__trace::after {
+    content: "";
+    clip-path: polygon(
+        60% 51%, 73% 51%, 81% 35%, 90% 51%, 100% 51%,
+        100% 59%, 87% 59%, 81% 47%, 76% 59%, 60% 59%
+    );
+}
+
+.error-page__body {
+    padding: clamp(1.5rem, 5vw, 3.5rem);
+}
+
+.error-page__code {
+    margin: 0 0 0.5rem;
+    color: var(--accent);
+    font-size: clamp(2.75rem, 7vw, 4.5ren);
+    font-weight: 750;
+    line-height: 1;
+}
+
+.error-page__body h1 {
+    margin: 0 0 0.75rem;
+    font-size: clamp(1.4rem, 3vw, 2rem);
+}
+
+.error-page__message {
+    margin: 0 0 1.5rem;
+    line-height: 1.7;
+}
+
+@media (max-width: 640px) {
+    .error-page {
+        grid-template-columns: 1fr;
+    }
+
+    .error-page__art {
+        min-height: 10rem;
+    }
+}

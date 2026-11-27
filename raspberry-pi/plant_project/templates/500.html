@@ -1,14 +1,7 @@
-{% extends "base.html" %}
+{% extends "error_page.html" %}
 
-{% block title %}エラーが発生しました | ObserLeaf{% endblock %}
-
-{% block content %}
-<section aria-labelledby="error-title">
-    <p>500</p>
-    <h1 id="error-title">エラーが発生しました</h1>
-    <p>処理中に問題が発生しました。時間をおいてから、もう一度お試しください。</p>
-    <a class="button-primary" href="{% url 'dashboard' %}">
-        ダッシュボードへ戻る
-    </a>
-</section>
-{% endblock %}
+{% block title %}サーバーで問題が発生しました | ObserLeaf{% endblock %}
+{% block error_theme %}error-page--500{% endblock %}
+{% block error_code %}500{% endblock %}
+{% block error_heading %}サーバーで問題が発生しました{% endblock %}
+{% block error_message %}時間をおいてから、もう一度お試しください。{% endblock %}
