@@ -139,5 +139,24 @@ STATICFILES_STORAGE = (
     'whitenoise.storage.CompressedManifestStaticFilesStorage'
 )
 
+# エラーの詳細を画面に出さず、サーバ側のログに残す設定
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "handlers": {
+        "error_console": {
+            "class": "logging.StreamHandler",
+            "level": "ERROR",
+        },
+    },
+    "loggers": {
+        "django.request": {
+            "handlers": ["error_console"],
+            "level": "ERROR",
+            "propagate": False,
+        },
+    },
+}
+
 # すべてのモデルのIDをBigAutoFieldにする
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'

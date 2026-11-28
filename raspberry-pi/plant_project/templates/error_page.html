@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block css %}
+<link rel="stylesheet" href="{% static 'css/error-pages.css' %}">
+{% endblock %}
+
+{% block content %}
+<section class="error-page {% block error_theme %}{% endblock %}"
+        aria-labelledby="error-title">
+    <div class="error-page__art" aria-hidden="true">
+        <span class="error-page__leaf"></span>
+        <span class="error-page__trace"></span>
+    </div>
+
+    <div class="error-page__body">
+        <p class="error-page__code">{% block error_code %}{% endblock %}</p>
+        <h1 id="error-title">{% block error_heading %}{% endblock %}</h1>
+        <p class="error-page__message">{% block error_message %}{% endblock %}</p>
+        <a class="button-primary" href="{% url 'dashboard' %}">
+            ダッシュボードへ戻る
+        </a>
+    </div>
+</section>
+{% endblock %}
